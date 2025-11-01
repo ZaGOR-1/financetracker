@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uk" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест темної теми</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card {
+            background-color: #f8f9fa !important;
+            color: #212529 !important;
+            border: 1px solid #dee2e6 !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            padding: 1.5rem !important;
+        }
+        
+        .dark .card {
+            background-color: #1f2937 !important;
+            color: #f9fafb !important;
+            border-color: #374151 !important;
+        }
+        
+        .dark .bg-white {
+            background-color: #1f2937 !important;
+        }
+        
+        .dark .text-gray-900 {
+            color: #f9fafb !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Тест темної теми</h1>
+            <button onclick="toggleTheme()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Перемкнути тему
+            </button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="card border-l-4 border-green-600">
+                <h3 class="font-bold mb-2">Картка 1</h3>
+                <p class="text-sm">Ця картка не повинна бути білою в темній темі</p>
+            </div>
+            
+            <div class="card border-l-4 border-blue-600">
+                <h3 class="font-bold mb-2">Картка 2</h3>
+                <p class="text-sm">Фон має бути #1f2937 (темно-сірий)</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2 class="text-xl font-bold mb-4">Перевірка елементів</h2>
+            <ul class="space-y-2 text-sm">
+                <li>✅ Фон карток: <span id="card-bg"></span></li>
+                <li>✅ Колір тексту: <span id="text-color"></span></li>
+                <li>✅ Тема: <span id="theme-name"></span></li>
+            </ul>
+        </div>
+        
+        <div class="mt-6 p-4 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+            <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                <strong>Інструкція:</strong> Натисніть "Перемкнути тему" і перевірте, чи всі картки темно-сірі, а не білі!
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            updateInfo();
+        }
+        
+        function updateInfo() {
+            const card = document.querySelector('.card');
+            const style = window.getComputedStyle(card);
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            document.getElementById('card-bg').textContent = style.backgroundColor;
+            document.getElementById('text-color').textContent = style.color;
+            document.getElementById('theme-name').textContent = isDark ? 'Темна 🌙' : 'Світла ☀️';
+        }
+        
+        updateInfo();
+    </script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔒 Security Headers Test - Finance Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">🔒 Тест Security Headers</h1>
+            <p class="text-gray-600 mb-6">Перевірка роботи захисних заголовків HTTP</p>
+            
+            <!-- Status -->
+            <div id="status" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-blue-800 font-medium">⏳ Аналіз заголовків...</p>
+            </div>
+        </div>
+
+        <!-- Security Headers -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">📋 Security Headers</h2>
+            <div id="headers" class="space-y-3">
+                <p class="text-gray-600">Завантаження...</p>
+            </div>
+        </div>
+
+        <!-- Rate Limiting Test -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">⚡ Rate Limiting Test</h2>
+            <p class="text-gray-600 mb-4">Натисніть кнопку кілька разів швидко (більше 60 разів) для перевірки rate limiting</p>
+            <button id="testRateLimitBtn" 
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-bold">
+                Тестувати API Rate Limit
+            </button>
+            <div id="rateLimitResult" class="mt-4 space-y-2"></div>
+        </div>
+
+        <!-- CSRF Test -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">🛡️ CSRF Protection Test</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="border border-green-200 bg-green-50 rounded-lg p-4">
+                    <h3 class="font-bold text-green-800 mb-2">✅ З CSRF токеном</h3>
+                    <form id="validForm" action="/api/v1/auth/login" method="POST" class="space-y-2">
+                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                        <input type="email" name="email" value="test@test.com" class="w-full p-2 border rounded text-sm">
+                        <input type="password" name="password" value="password" class="w-full p-2 border rounded text-sm">
+                        <button type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700 text-sm">
+                            Надіслати (безпечно)
+                        </button>
+                    </form>
+                    <p class="text-xs text-green-600 mt-2">Має працювати ✓</p>
+                </div>
+
+                <div class="border border-red-200 bg-red-50 rounded-lg p-4">
+                    <h3 class="font-bold text-red-800 mb-2">❌ Без CSRF токена</h3>
+                    <p class="text-sm text-red-700 mb-2">Спроба відправити форму без CSRF токена</p>
+                    <button id="invalidCsrf" class="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700 text-sm">
+                        Надіслати (небезпечно)
+                    </button>
+                    <p class="text-xs text-red-600 mt-2">Має бути заблоковано ✗</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Score -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">🏆 Security Score</h2>
+            <div id="securityScore" class="text-center">
+                <div class="text-6xl font-bold text-gray-300 mb-2">?</div>
+                <p class="text-gray-600">Розраховується...</p>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">📋 Що перевіряється</h2>
+            <ul class="space-y-2 text-gray-700">
+                <li><strong>X-Frame-Options:</strong> Захист від Clickjacking атак</li>
+                <li><strong>X-Content-Type-Options:</strong> Запобігає MIME type sniffing</li>
+                <li><strong>X-XSS-Protection:</strong> Включає XSS фільтр браузера</li>
+                <li><strong>Referrer-Policy:</strong> Контролює передачу referrer</li>
+                <li><strong>Permissions-Policy:</strong> Обмежує доступ до браузерних API</li>
+                <li><strong>Content-Security-Policy:</strong> Захист від XSS та injection атак</li>
+                <li><strong>Strict-Transport-Security:</strong> Примушує HTTPS (тільки в production)</li>
+                <li><strong>Rate Limiting:</strong> Захист від brute-force та DDoS</li>
+                <li><strong>CSRF Protection:</strong> Захист від Cross-Site Request Forgery</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Перевірка security headers
+        async function checkSecurityHeaders() {
+            try {
+                const response = await fetch(window.location.href);
+                const headers = response.headers;
+                
+                const securityHeaders = {
+                    'X-Frame-Options': headers.get('x-frame-options'),
+                    'X-Content-Type-Options': headers.get('x-content-type-options'),
+                    'X-XSS-Protection': headers.get('x-xss-protection'),
+                    'Referrer-Policy': headers.get('referrer-policy'),
+                    'Permissions-Policy': headers.get('permissions-policy'),
+                    'Content-Security-Policy': headers.get('content-security-policy'),
+                    'Strict-Transport-Security': headers.get('strict-transport-security'),
+                };
+
+                let score = 0;
+                let maxScore = 7;
+                let html = '';
+
+                for (const [header, value] of Object.entries(securityHeaders)) {
+                    const hasValue = value !== null && value !== '';
+                    if (hasValue) score++;
+                    
+                    const color = hasValue ? 'green' : 'red';
+                    const icon = hasValue ? '✅' : '❌';
+                    const truncatedValue = value ? (value.length > 60 ? value.substring(0, 60) + '...' : value) : 'Відсутній';
+                    
+                    html += `
+                        <div class="flex items-start space-x-3 p-3 bg-${color}-50 border border-${color}-200 rounded-lg">
+                            <span class="text-2xl">${icon}</span>
+                            <div class="flex-1">
+                                <p class="font-bold text-${color}-800">${header}</p>
+                                <p class="text-sm text-${color}-700 font-mono break-all">${truncatedValue}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('headers').innerHTML = html;
+
+                // Security Score
+                const percentage = Math.round((score / maxScore) * 100);
+                const scoreColor = percentage >= 80 ? 'green' : percentage >= 60 ? 'yellow' : 'red';
+                const scoreGrade = percentage >= 90 ? 'A+' : percentage >= 80 ? 'A' : percentage >= 70 ? 'B' : percentage >= 60 ? 'C' : 'D';
+                
+                document.getElementById('securityScore').innerHTML = `
+                    <div class="text-6xl font-bold text-${scoreColor}-600 mb-2">${scoreGrade}</div>
+                    <p class="text-2xl font-bold text-gray-800">${score}/${maxScore} Headers</p>
+                    <p class="text-gray-600 mt-2">${percentage}% Security Coverage</p>
+                `;
+
+                // Status
+                document.getElementById('status').innerHTML = `
+                    <p class="text-${scoreColor}-800 font-medium">${icon} Security Headers: ${score}/${maxScore} активні</p>
+                `;
+                document.getElementById('status').className = `bg-${scoreColor}-50 border border-${scoreColor}-200 rounded-lg p-4 mb-6`;
+
+            } catch (error) {
+                console.error('Помилка перевірки headers:', error);
+                document.getElementById('headers').innerHTML = `
+                    <p class="text-red-600">Помилка: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Rate Limiting Test
+        let requestCount = 0;
+        document.getElementById('testRateLimitBtn').addEventListener('click', async () => {
+            requestCount++;
+            const resultDiv = document.getElementById('rateLimitResult');
+            
+            try {
+                const response = await fetch('/api/v1/stats/overview', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const rateLimitRemaining = response.headers.get('x-ratelimit-remaining');
+                const rateLimitLimit = response.headers.get('x-ratelimit-limit');
+                
+                if (response.status === 429) {
+                    resultDiv.innerHTML = `
+                        <div class="bg-red-50 border border-red-200 p-3 rounded-lg">
+                            <p class="text-red-800 font-bold">❌ Rate Limit Exceeded!</p>
+                            <p class="text-red-700 text-sm">Запит #${requestCount} заблоковано. Спробуйте через хвилину.</p>
+                        </div>
+                    ` + resultDiv.innerHTML;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="bg-green-50 border border-green-200 p-3 rounded-lg">
+                            <p class="text-green-800 font-bold">✅ Запит #${requestCount} успішний</p>
+                            <p class="text-green-700 text-sm">Залишилось: ${rateLimitRemaining}/${rateLimitLimit} запитів</p>
+                        </div>
+                    ` + resultDiv.innerHTML;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+                        <p class="text-yellow-800">⚠️ Помилка: ${error.message}</p>
+                    </div>
+                ` + resultDiv.innerHTML;
+            }
+        });
+
+        // CSRF Test
+        document.getElementById('invalidCsrf').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'test@test.com',
+                        password: 'password'
+                    })
+                });
+
+                if (response.status === 419) {
+                    alert('✅ CSRF Protection працює! Запит без токена заблоковано (419 CSRF Token Mismatch)');
+                } else {
+                    alert('⚠️ Запит пройшов (це може бути API endpoint без CSRF, що нормально)');
+                }
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        });
+
+        // Запускаємо перевірку
+        checkSecurityHeaders();
+    </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Chart</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background: #f3f4f6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            max-height: 300px;
+            width: 100%;
+            overflow: hidden;
+            border: 2px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        .chart-wrapper canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 300px !important;
+            max-height: 300px !important;
+        }
+        h1 {
+            color: #111827;
+            margin-bottom: 10px;
+        }
+        .info {
+            background: #dbeafe;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Тест Chart.js з фіксованою висотою</h1>
+        <div class="info">
+            ✅ Якщо графік має висоту 300px і не розтягується - виправлення працює!<br>
+            ❌ Якщо графік нескінченно розтягується - є проблема з Chart.js
+        </div>
+        
+        <h2>Тестовий графік</h2>
+        <div class="chart-wrapper">
+            <canvas id="testChart"></canvas>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 10px; background: #f3f4f6; border-radius: 4px;">
+            <strong>Розміри контейнера:</strong>
+            <div id="sizes"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        const ctx = document.getElementById('testChart');
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер'],
+                datasets: [{
+                    label: 'Тестові дані',
+                    data: [12, 19, 3, 5, 2, 3],
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+        
+        // Показати розміри
+        setTimeout(() => {
+            const wrapper = document.querySelector('.chart-wrapper');
+            const canvas = document.getElementById('testChart');
+            document.getElementById('sizes').innerHTML = `
+                Wrapper height: ${wrapper.offsetHeight}px<br>
+                Canvas height: ${canvas.offsetHeight}px<br>
+                Canvas style height: ${canvas.style.height}
+            `;
+        }, 100);
+    </script>
+</body>
+</html>

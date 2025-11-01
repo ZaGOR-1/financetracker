@@ -1,0 +1,30 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+
+    # Rule level
+    level: 5
+
+    # Ignore errors
+    ignoreErrors:
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder#'
+        - '#PHPDoc tag @var#'
+        - '#Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection.*::map\(\)#'
+        -
+            identifier: missingType.iterableValue
+        -
+            identifier: missingType.generics
+
+
+
+    # Exclude paths
+    excludePaths:
+        - app/Console/Kernel.php
+        - app/Exceptions/Handler.php
+        - app/Http/Kernel.php
+
+    # Type coverage
+    reportUnmatchedIgnoredErrors: false

@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark Theme Only - тільки темна тема */
+@layer base {
+    :root {
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2d2d2d;
+        --bg-card: #1f2937;
+        --text-primary: #f9fafb;
+        --text-secondary: #d1d5db;
+        --text-muted: #9ca3af;
+        --border-color: #374151;
+    }
+    
+    body {
+        @apply bg-gray-900;
+        background-color: var(--bg-primary);
+    }
+}
+
+/* Custom styles */
+@layer components {
+    .card {
+        @apply rounded-lg shadow-sm p-6 border;
+        background-color: var(--bg-card);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+    }
+    
+    .btn-primary {
+        @apply bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg px-5 py-2.5 text-center transition-colors shadow-sm;
+    }
+    
+    .btn-secondary {
+        @apply bg-gray-700 hover:bg-gray-600 font-medium rounded-lg px-5 py-2.5 text-center transition-colors;
+        color: var(--text-primary);
+    }
+    
+    /* Input fields */
+    .input {
+        @apply w-full rounded-lg border px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors;
+        background-color: var(--bg-card);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .input::placeholder {
+        color: var(--text-muted);
+    }
+}
+
+/* Chart containers - prevent infinite height */
+@layer utilities {
+    .chart-container {
+        position: relative;
+        height: 300px;
+        max-height: 400px;
+        overflow: hidden;
+    }
+    
+    .chart-container canvas {
+        max-width: 100%;
+        max-height: 100%;
+    }
+}
+
+/* Responsive improvements */
+@layer utilities {
+    /* Prevent horizontal scroll on mobile */
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Cards responsive */
+    .card {
+        overflow: hidden;
+        word-wrap: break-word;
+    }
+    
+    /* Buttons responsive */
+    @media (max-width: 640px) {
+        .btn-primary, .btn-secondary {
+            @apply px-3 py-2 text-sm;
+        }
+        
+        /* Smaller text on mobile */
+        h1 {
+            @apply text-2xl;
+        }
+        
+        h2 {
+            @apply text-xl;
+        }
+        
+        /* Compact KPI cards */
+        .card {
+            @apply p-4;
+        }
+    }
+    
+    /* Prevent charts from overflowing */
+    @media (max-width: 768px) {
+        .chart-container {
+            height: 240px;
+            max-height: 240px;
+        }
+    }
+}

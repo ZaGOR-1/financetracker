@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест Cashflow графіка</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1f2937;
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            background: #374151;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            cursor: pointer;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .info {
+            background: #374151;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Діагностика Cashflow графіка</h1>
+        
+        <div class="info">
+            <p><strong>Статус:</strong> <span id="status">Завантаження...</span></p>
+            <p><strong>Поточна валюта:</strong> <span id="currentCurrency">UAH</span></p>
+            <p><strong>Поточний період:</strong> <span id="currentPeriod">6m</span></p>
+        </div>
+
+        <div class="controls">
+            <strong>Період:</strong>
+            <button onclick="loadData('7d')">7 днів</button>
+            <button onclick="loadData('14d')">14 днів</button>
+            <button onclick="loadData('30d')">30 днів</button>
+            <button onclick="loadData('3m')">3 місяці</button>
+            <button onclick="loadData('6m')">6 місяців</button>
+        </div>
+
+        <div class="controls">
+            <strong>Валюта:</strong>
+            <button onclick="changeCurrency('UAH')">₴ UAH</button>
+            <button onclick="changeCurrency('USD')">$ USD</button>
+            <button onclick="changeCurrency('PLN')">zł PLN</button>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="cashflowChart"></canvas>
+        </div>
+
+        <div class="info">
+            <h3>Дані графіка:</h3>
+            <pre id="chartData" style="overflow-x: auto;">Немає даних</pre>
+        </div>
+
+        <div class="info">
+            <h3>Console Log:</h3>
+            <pre id="consoleLog" style="overflow-x: auto; max-height: 200px;"></pre>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+        let currentPeriod = '6m';
+        let currentCurrency = 'UAH';
+
+        // Override console.log to display in page
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const logDiv = document.getElementById('consoleLog');
+            logDiv.textContent += args.join(' ') + '\n';
+        };
+
+        const currencySymbols = {
+            'UAH': '₴',
+            'USD': '$',
+            'PLN': 'zł',
+            'EUR': '€'
+        };
+
+        function updateStatus(text) {
+            document.getElementById('status').textContent = text;
+        }
+
+        function changeCurrency(currency) {
+            currentCurrency = currency;
+            document.getElementById('currentCurrency').textContent = currency;
+            loadData(currentPeriod, currency);
+        }
+
+        function loadData(period, currency = null) {
+            if (!currency) currency = currentCurrency;
+            
+            currentPeriod = period;
+            document.getElementById('currentPeriod').textContent = period;
+            
+            updateStatus('Завантаження даних...');
+            console.log(`Завантаження: period=${period}, currency=${currency}`);
+
+            const url = `/api/v1/stats/cashflow?period=${period}&currency=${currency}`;
+            
+            fetch(url, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Отримані дані:', data);
+                
+                if (!data.success) {
+                    throw new Error('API returned success=false');
+                }
+
+                const cashflow = data.data.cashflow;
+                const currency = data.data.currency;
+                
+                // Display raw data
+                document.getElementById('chartData').textContent = JSON.stringify(data, null, 2);
+                
+                updateStatus('Дані завантажено. Малюю графік...');
+                drawChart(cashflow, currency);
+                updateStatus('✅ Графік готовий!');
+            })
+            .catch(error => {
+                console.error('Помилка:', error);
+                updateStatus('❌ Помилка: ' + error.message);
+            });
+        }
+
+        function drawChart(cashflow, currency) {
+            const ctx = document.getElementById('cashflowChart');
+            const symbol = currencySymbols[currency] || currency;
+
+            console.log('Малюю графік з', cashflow.length, 'точками даних');
+
+            // Destroy old chart
+            if (chart) {
+                console.log('Знищую старий графік');
+                chart.destroy();
+                chart = null;
+            }
+
+            // Create new chart
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: cashflow.map(item => item.period),
+                    datasets: [
+                        {
+                            label: 'Доходи',
+                            data: cashflow.map(item => item.income),
+                            borderColor: 'rgb(34, 197, 94)',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Витрати',
+                            data: cashflow.map(item => item.expense),
+                            borderColor: 'rgb(239, 68, 68)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 500
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `Cashflow (${symbol})`,
+                            color: '#f9fafb',
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            labels: {
+                                color: '#f9fafb',
+                                font: { size: 14 }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grace: '5%',
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: function(value) {
+                                    return value.toLocaleString('uk-UA') + ' ' + symbol;
+                                }
+                            },
+                            grid: { color: '#4b5563' }
+                        },
+                        x: {
+                            ticks: { color: '#9ca3af' },
+                            grid: { color: '#4b5563' }
+                        }
+                    }
+                }
+            });
+
+            console.log('Графік створено успішно');
+        }
+
+        // Initial load
+        console.log('Початкове завантаження...');
+        loadData('6m', 'UAH');
+    </script>
+</body>
+</html>

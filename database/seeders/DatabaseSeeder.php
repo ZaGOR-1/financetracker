@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
         $incomeCategories = Category::where('type', 'income')
             ->whereNull('user_id')
             ->get();
-        
+
         $expenseCategories = Category::where('type', 'expense')
             ->whereNull('user_id')
             ->get();
@@ -107,6 +107,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->command->info('База даних успішно заповнена тестовими даними!');
-        $this->command->info("Тестовий користувач: test@example.com / password");
+        $this->command->info('Тестовий користувач: test@example.com / password');
     }
 }

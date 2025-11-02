@@ -2,7 +2,7 @@
 
 /**
  * Middleware для виявлення N+1 проблем у запитах
- * 
+ *
  * Використання: додайте до app/Http/Kernel.php
  */
 
@@ -35,7 +35,7 @@ class DetectNPlusOne
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!app()->environment('local', 'development')) {
+        if (! app()->environment('local', 'development')) {
             return $next($request);
         }
 
@@ -73,9 +73,9 @@ class DetectNPlusOne
             ]);
         }
 
-        if (!empty($nPlusOneDetected)) {
+        if (! empty($nPlusOneDetected)) {
             $grouped = array_count_values($nPlusOneDetected);
-            
+
             Log::warning('N+1 запити виявлені', [
                 'url' => $request->fullUrl(),
                 'method' => $request->method(),
@@ -86,7 +86,7 @@ class DetectNPlusOne
         // Додаємо заголовки для відладки (тільки у development)
         if (app()->environment('local')) {
             $response->headers->set('X-Query-Count', $queryCount);
-            if (!empty($nPlusOneDetected)) {
+            if (! empty($nPlusOneDetected)) {
                 $response->headers->set('X-N-Plus-One-Detected', 'true');
             }
         }

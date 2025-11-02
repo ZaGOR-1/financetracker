@@ -34,13 +34,13 @@ export function initPageSpecificComponents(pageName) {
 }
 
 function initDashboardComponents() {
-    console.log('✓ Dashboard компоненти ініціалізовано');
+    // Dashboard-specific Alpine components
 }
 
 function initTransactionComponents() {
-    console.log('✓ Transaction компоненти ініціалізовано');
+    // Transaction-specific Alpine components
 }
 
 function initBudgetComponents() {
-    console.log('✓ Budget компоненти ініціалізовано');
+    // Budget-specific Alpine components
 }

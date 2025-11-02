@@ -78,7 +78,7 @@
                     id="currency" 
                     class="input @error('currency') border-red-500 @enderror"
                     required
-                    onchange="calculateSalary()">
+                    onchange="convertHourlyRate()">
                     <option value="UAH" {{ old('currency') === 'UAH' ? 'selected' : '' }}>🇺🇦 UAH (₴)</option>
                     <option value="USD" {{ old('currency') === 'USD' ? 'selected' : '' }}>🇺🇸 USD ($)</option>
                     <option value="PLN" {{ old('currency') === 'PLN' ? 'selected' : '' }}>🇵🇱 PLN (zł)</option>
@@ -228,6 +228,10 @@ const currencySymbols = {
     'EUR': '€'
 };
 
+// Зберігаємо попередню валюту та ставку для конвертації
+let previousCurrency = 'UAH';
+let isConverting = false;
+
 // Функція розрахунку зарплати
 function calculateSalary() {
     const hours = parseFloat(document.getElementById('hours').value) || 0;
@@ -253,6 +257,49 @@ function calculateSalary() {
     }
 }
 
+// Функція конвертації ставки при зміні валюти
+async function convertHourlyRate() {
+    if (isConverting) return;
+    
+    const currentCurrency = document.getElementById('currency').value;
+    const rateInput = document.getElementById('hourly_rate');
+    const currentRate = parseFloat(rateInput.value) || 0;
+    
+    // Якщо ставка не введена або валюта не змінилася
+    if (currentRate === 0 || previousCurrency === currentCurrency) {
+        previousCurrency = currentCurrency;
+        calculateSalary();
+        return;
+    }
+    
+    isConverting = true;
+    
+    try {
+        // Викликаємо API для конвертації
+        const response = await fetch(`/api/v1/currencies/convert?amount=${currentRate}&from=${previousCurrency}&to=${currentCurrency}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Оновлюємо ставку з конвертованим значенням
+            rateInput.value = data.data.converted.toFixed(2);
+            previousCurrency = currentCurrency;
+            calculateSalary();
+        } else {
+            console.error('Помилка конвертації:', data.message);
+            // Все одно оновлюємо валюту навіть якщо конвертація не вдалася
+            previousCurrency = currentCurrency;
+            calculateSalary();
+        }
+    } catch (error) {
+        console.error('Помилка запиту конвертації:', error);
+        // Все одно оновлюємо валюту
+        previousCurrency = currentCurrency;
+        calculateSalary();
+    } finally {
+        isConverting = false;
+    }
+}
+
 // Функція скидання форми
 function resetForm() {
     document.getElementById('calculatorForm').reset();
@@ -262,6 +309,8 @@ function resetForm() {
 
 // Розрахувати при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', function() {
+    // Ініціалізуємо попередню валюту
+    previousCurrency = document.getElementById('currency').value;
     calculateSalary();
 });
 </script>

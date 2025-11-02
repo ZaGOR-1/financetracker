@@ -21,15 +21,18 @@ class StatsController extends Controller
         $validated = $request->validate([
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
+            'currency' => 'nullable|string|in:UAH,USD,PLN,EUR',
         ]);
 
         $dateFrom = $validated['date_from'] ?? now()->startOfMonth()->format('Y-m-d');
         $dateTo = $validated['date_to'] ?? now()->endOfMonth()->format('Y-m-d');
+        $currency = $validated['currency'] ?? null;
 
         $overview = $this->statsService->getOverview(
             $request->user()->id,
             $dateFrom,
-            $dateTo
+            $dateTo,
+            $currency
         );
 
         return response()->json([

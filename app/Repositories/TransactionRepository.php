@@ -28,7 +28,7 @@ class TransactionRepository implements TransactionRepositoryInterface
         // Фільтр за типом (income/expense) - використовуємо JOIN замість whereHas
         if (isset($filters['type'])) {
             $query->join('categories', 'transactions.category_id', '=', 'categories.id')
-                  ->where('categories.type', $filters['type']);
+                ->where('categories.type', $filters['type']);
         }
 
         return $query->orderBy('transactions.transaction_date', 'desc')
@@ -45,12 +45,14 @@ class TransactionRepository implements TransactionRepositoryInterface
     {
         $transaction = Transaction::findOrFail($id);
         $transaction->update($data);
+
         return $transaction->fresh(['category:id,name,type,icon,color']);
     }
 
     public function delete(int $id): bool
     {
         $transaction = Transaction::findOrFail($id);
+
         return $transaction->delete();
     }
 

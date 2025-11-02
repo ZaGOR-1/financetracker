@@ -60,32 +60,56 @@
     }
     
     /* Currency buttons */
-    .currency-btn {
+    .currency-btn, .dashboard-currency-btn {
         transition: all 0.2s ease;
     }
     
-    .currency-btn:not(.bg-blue-600) {
+    .currency-btn:not(.bg-blue-600), .dashboard-currency-btn:not(.bg-blue-600) {
         color: #374151;
     }
     
-    .dark .currency-btn:not(.bg-blue-600) {
+    .dark .currency-btn:not(.bg-blue-600), .dark .dashboard-currency-btn:not(.bg-blue-600) {
         color: #d1d5db;
     }
     
-    .currency-btn:not(.bg-blue-600):hover {
+    .currency-btn:not(.bg-blue-600):hover, .dashboard-currency-btn:not(.bg-blue-600):hover {
         background-color: #e5e7eb;
     }
     
-    .dark .currency-btn:not(.bg-blue-600):hover {
+    .dark .currency-btn:not(.bg-blue-600):hover, .dark .dashboard-currency-btn:not(.bg-blue-600):hover {
         background-color: #4b5563;
     }
 </style>
 @endpush
 
 @section('content')
-<div class="mb-6">
-    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Дашборд</h1>
-    <p class="text-gray-700 dark:text-gray-400 mt-1">Огляд ваших фінансів</p>
+<div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Дашборд</h1>
+        <p class="text-gray-700 dark:text-gray-400 mt-1">Огляд ваших фінансів</p>
+    </div>
+    
+    <!-- Currency Selector -->
+    <div class="flex items-center gap-2">
+        <span class="text-sm text-gray-600 dark:text-gray-400">Валюта:</span>
+        <div class="inline-flex rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-1">
+            <button onclick="changeDashboardCurrency('UAH')" 
+                    class="dashboard-currency-btn px-3 py-1 text-sm font-medium rounded-md transition-colors duration-200 bg-blue-600 text-white"
+                    data-currency="UAH">
+                UAH (₴)
+            </button>
+            <button onclick="changeDashboardCurrency('USD')" 
+                    class="dashboard-currency-btn px-3 py-1 text-sm font-medium rounded-md transition-colors duration-200"
+                    data-currency="USD">
+                USD ($)
+            </button>
+            <button onclick="changeDashboardCurrency('PLN')" 
+                    class="dashboard-currency-btn px-3 py-1 text-sm font-medium rounded-md transition-colors duration-200"
+                    data-currency="PLN">
+                PLN (zł)
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- KPI Cards -->
@@ -228,26 +252,45 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Use session-based auth (no token needed for web routes)
-    const headers = {
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-        'X-Requested-With': 'XMLHttpRequest'
-    };
+// Глобальна змінна для поточної валюти дашборду
+let currentDashboardCurrency = 'UAH';
+
+// Глобальні змінні для headers
+let dashboardHeaders = null;
+let dashboardFetchWithTimeout = null;
+
+// Функція зміни валюти дашборду
+function changeDashboardCurrency(currency) {
+    if (currentDashboardCurrency === currency) return;
     
-    // Fetch Overview Data with timeout
-    const fetchWithTimeout = (url, options, timeout = 5000) => {
-        return Promise.race([
-            fetch(url, options),
-            new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Timeout')), timeout)
-            )
-        ]);
-    };
+    currentDashboardCurrency = currency;
     
-    fetchWithTimeout('/api/v1/stats/overview', {
-        headers: headers,
+    // Оновлюємо активну кнопку
+    document.querySelectorAll('.dashboard-currency-btn').forEach(btn => {
+        if (btn.dataset.currency === currency) {
+            btn.classList.add('bg-blue-600', 'text-white');
+            btn.classList.remove('hover:bg-gray-100', 'dark:hover:bg-gray-700');
+        } else {
+            btn.classList.remove('bg-blue-600', 'text-white');
+            btn.classList.add('hover:bg-gray-100', 'dark:hover:bg-gray-700');
+        }
+    });
+    
+    // Перезавантажуємо дані дашборду з новою валютою
+    loadDashboardData(currency);
+    
+    // Зберігаємо вибір у localStorage
+    localStorage.setItem('dashboardCurrency', currency);
+}
+
+// Глобальна функція завантаження даних дашборду
+function loadDashboardData(currency = null) {
+    const url = currency 
+        ? `/api/v1/stats/overview?currency=${currency}` 
+        : '/api/v1/stats/overview';
+    
+    dashboardFetchWithTimeout(url, {
+        headers: dashboardHeaders,
         credentials: 'same-origin'
     })
     .then(response => {
@@ -273,7 +316,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const currencySymbols = {
                 'UAH': '₴',
                 'USD': '$',
-                'PLN': 'zł'
+                'PLN': 'zł',
+                'EUR': '€'
             };
             const currencySymbol = currencySymbols[stats.currency] || stats.currency;
             
@@ -311,6 +355,43 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('balance').innerHTML = '<span class="text-red-500 text-sm">Помилка</span>';
         document.getElementById('top-categories').innerHTML = '<p class="text-red-400">Помилка завантаження. Перевірте консоль браузера (F12)</p>';
     });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Use session-based auth (no token needed for web routes)
+    dashboardHeaders = {
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        'X-Requested-With': 'XMLHttpRequest'
+    };
+    
+    // Fetch Overview Data with timeout
+    dashboardFetchWithTimeout = (url, options, timeout = 5000) => {
+        return Promise.race([
+            fetch(url, options),
+            new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout')), timeout)
+            )
+        ]);
+    };
+    
+    // Відновлюємо вибір валюти з localStorage
+    const savedCurrency = localStorage.getItem('dashboardCurrency');
+    if (savedCurrency && ['UAH', 'USD', 'PLN'].includes(savedCurrency)) {
+        currentDashboardCurrency = savedCurrency;
+        // Оновлюємо активну кнопку
+        document.querySelectorAll('.dashboard-currency-btn').forEach(btn => {
+            if (btn.dataset.currency === savedCurrency) {
+                btn.classList.add('bg-blue-600', 'text-white');
+                btn.classList.remove('hover:bg-gray-100', 'dark:hover:bg-gray-700');
+            } else {
+                btn.classList.remove('bg-blue-600', 'text-white');
+            }
+        });
+    }
+    
+    // Завантажуємо дані при старті
+    loadDashboardData(currentDashboardCurrency);
 
     // Global variable for cashflow chart
     let cashflowChart = null;
@@ -327,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const url = `/api/v1/stats/cashflow?period=${period}${currency ? '&currency=' + currency : ''}`;
         
         fetch(url, {
-            headers: headers,
+            headers: dashboardHeaders,
             credentials: 'same-origin'
         })
         .then(response => {
@@ -520,7 +601,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Fetch Category Breakdown
     fetch('/api/v1/stats/category-breakdown', {
-        headers: headers,
+        headers: dashboardHeaders,
         credentials: 'same-origin'
     })
     .then(response => {

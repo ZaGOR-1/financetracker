@@ -24,7 +24,7 @@ echo "2️⃣  Тест конвертації:\n";
 try {
     $result = $service->convert(1000, 'USD', 'UAH', new DateTime('2025-10-06'));
     echo "   $1000 USD = {$result} UAH\n";
-    
+
     if ($result == 1000) {
         echo "   ❌ FALLBACK! Має бути ~41,250 UAH\n";
     } else {
@@ -38,7 +38,7 @@ echo "\n";
 try {
     $result = $service->convert(800, 'PLN', 'UAH', new DateTime('2025-10-02'));
     echo "   800 PLN = {$result} UAH\n";
-    
+
     if ($result == 800) {
         echo "   ❌ FALLBACK! Має бути ~8,400 UAH\n";
     } else {
@@ -58,8 +58,7 @@ $usdRate = DB::table('exchange_rates')
 
 if ($usdRate) {
     echo "   Знайдено: USD -> UAH = {$usdRate->rate}\n";
-    echo "   $1000 USD = " . (1000 * $usdRate->rate) . " UAH\n";
+    echo '   $1000 USD = '.(1000 * $usdRate->rate)." UAH\n";
 } else {
     echo "   ❌ Не знайдено!\n";
 }
-

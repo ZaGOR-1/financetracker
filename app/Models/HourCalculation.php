@@ -68,7 +68,7 @@ class HourCalculation extends Model
      */
     public function getCurrencySymbolAttribute(): string
     {
-        return match($this->currency) {
+        return match ($this->currency) {
             'UAH' => '₴',
             'USD' => '$',
             'PLN' => 'zł',
@@ -82,7 +82,7 @@ class HourCalculation extends Model
      */
     public function getFormattedDailySalaryAttribute(): string
     {
-        return $this->currency_symbol . number_format($this->daily_salary, 2, '.', ',');
+        return $this->currency_symbol.number_format($this->daily_salary, 2, '.', ',');
     }
 
     /**
@@ -90,7 +90,7 @@ class HourCalculation extends Model
      */
     public function getFormattedWeeklySalaryAttribute(): string
     {
-        return $this->currency_symbol . number_format($this->weekly_salary, 2, '.', ',');
+        return $this->currency_symbol.number_format($this->weekly_salary, 2, '.', ',');
     }
 
     /**
@@ -98,7 +98,7 @@ class HourCalculation extends Model
      */
     public function getFormattedMonthlySalaryAttribute(): string
     {
-        return $this->currency_symbol . number_format($this->monthly_salary, 2, '.', ',');
+        return $this->currency_symbol.number_format($this->monthly_salary, 2, '.', ',');
     }
 
     /**
@@ -106,6 +106,6 @@ class HourCalculation extends Model
      */
     public function getFormattedYearlySalaryAttribute(): string
     {
-        return $this->currency_symbol . number_format($this->yearly_salary, 2, '.', ',');
+        return $this->currency_symbol.number_format($this->yearly_salary, 2, '.', ',');
     }
 }

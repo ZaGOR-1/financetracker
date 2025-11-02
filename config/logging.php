@@ -53,7 +53,7 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => env('LOG_STACK', 'daily,errors'),
             'ignore_exceptions' => false,
         ],
 
@@ -68,6 +68,62 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => 14,
+        ],
+
+        // Окремий канал для помилок
+        'errors' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/errors.log'),
+            'level' => 'error',
+            'days' => 30,
+        ],
+
+        // SQL запити
+        'queries' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/queries.log'),
+            'level' => 'debug',
+            'days' => 7,
+        ],
+
+        // Повільні запити
+        'slow_queries' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/slow-queries.log'),
+            'level' => 'warning',
+            'days' => 14,
+        ],
+
+        // HTTP запити
+        'requests' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/requests.log'),
+            'level' => 'info',
+            'days' => 7,
+        ],
+
+        // Performance моніторинг
+        'performance' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/performance.log'),
+            'level' => 'info',
+            'days' => 7,
+        ],
+
+        // Транзакції та важливі операції
+        'transactions' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/transactions.log'),
+            'level' => 'info',
+            'days' => 30,
+        ],
+
+        // Аутентифікація та безпека
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'info',
+            'days' => 90,
         ],
 
         'slack' => [

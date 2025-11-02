@@ -31,23 +31,23 @@ class UpdateCurrencyRates extends Command
 
         try {
             $results = $currencyService->updateAllRates();
-            
+
             $success = 0;
             $failed = 0;
 
             foreach ($results as $pair => $result) {
                 if ($result['success']) {
-                    $this->line("✅ {$pair}: " . number_format($result['rate'], 6));
+                    $this->line("✅ {$pair}: ".number_format($result['rate'], 6));
                     $success++;
                 } else {
-                    $this->error("❌ {$pair}: " . $result['error']);
+                    $this->error("❌ {$pair}: ".$result['error']);
                     $failed++;
                 }
             }
 
             $this->newLine();
             $this->info("📊 Успішно оновлено: {$success}");
-            
+
             if ($failed > 0) {
                 $this->warn("⚠️  Помилки: {$failed}");
             }
@@ -58,7 +58,8 @@ class UpdateCurrencyRates extends Command
             return Command::SUCCESS;
 
         } catch (\Exception $e) {
-            $this->error('❌ Помилка: ' . $e->getMessage());
+            $this->error('❌ Помилка: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

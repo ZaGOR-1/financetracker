@@ -44,11 +44,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('exchange_rates');
-        
+
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('default_currency');
         });
-        
+
         Schema::table('transactions', function (Blueprint $table) {
             $table->dropIndex(['currency']);
             $table->dropColumn('currency');

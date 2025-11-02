@@ -9,8 +9,6 @@ import { initCharts } from './charts.js';
  * Ініціалізація сторінки бюджетів
  */
 export async function initBudgets() {
-    console.log('⚡ Ініціалізація Budgets...');
-    
     initBudgetCards();
     initProgressBars();
     
@@ -19,8 +17,6 @@ export async function initBudgets() {
         await initCharts();
         await loadBudgetCharts();
     }
-    
-    console.log('✓ Budgets готові');
 }
 
 /**
@@ -31,7 +27,6 @@ function initBudgetCards() {
     if (cards.length === 0) return;
     
     // Логіка карток
-    console.log('✓ Budget cards готові');
 }
 
 /**
@@ -45,8 +40,6 @@ function initProgressBars() {
         const percentage = bar.dataset.progress;
         animateProgressBar(bar, percentage);
     });
-    
-    console.log('✓ Progress bars готові');
 }
 
 /**
@@ -81,6 +74,5 @@ async function loadBudgetCharts() {
     const budgetCanvas = document.getElementById('budgetChart');
     if (budgetCanvas) {
         // Ініціалізація графіку
-        console.log('✓ Budget chart завантажено');
     }
 }

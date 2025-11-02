@@ -36,21 +36,24 @@ class ClearUserCache extends Command
             $this->warn('Очищення всього кешу застосунку...');
             $cacheService->flush();
             $this->info('✓ Весь кеш очищено!');
+
             return self::SUCCESS;
         }
 
         $userIdInput = $this->argument('user_id');
         $type = $this->option('type');
 
-        if (!$userIdInput) {
+        if (! $userIdInput) {
             $this->error('Необхідно вказати user_id або використати --flush');
+
             return self::FAILURE;
         }
 
         $userId = (int) $userIdInput;
 
-        if ($type && !in_array($type, ['transactions', 'categories', 'budgets', 'stats', 'all'])) {
+        if ($type && ! in_array($type, ['transactions', 'categories', 'budgets', 'stats', 'all'])) {
             $this->error('Невірний тип. Доступні: transactions, categories, budgets, stats, all');
+
             return self::FAILURE;
         }
 

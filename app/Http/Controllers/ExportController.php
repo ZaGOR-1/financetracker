@@ -21,7 +21,7 @@ class ExportController extends Controller
             'type' => 'nullable|in:income,expense',
         ]);
 
-        $fileName = 'transactions_' . now()->format('Y-m-d_His') . '.xlsx';
+        $fileName = 'transactions_'.now()->format('Y-m-d_His').'.xlsx';
 
         return Excel::download(
             new TransactionsExport(
@@ -39,7 +39,7 @@ class ExportController extends Controller
      */
     public function budgets(): BinaryFileResponse
     {
-        $fileName = 'budgets_' . now()->format('Y-m-d_His') . '.xlsx';
+        $fileName = 'budgets_'.now()->format('Y-m-d_His').'.xlsx';
 
         return Excel::download(
             new BudgetsExport(auth()->id()),

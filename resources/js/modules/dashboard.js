@@ -9,8 +9,6 @@ import { initCharts } from './charts.js';
  * Ініціалізація дашборду
  */
 export async function initDashboard() {
-    console.log('⚡ Ініціалізація Dashboard...');
-    
     // Завантажуємо Chart.js тільки якщо є графіки
     if (document.querySelector('[data-chart]')) {
         await initCharts();
@@ -20,8 +18,6 @@ export async function initDashboard() {
     // Ініціалізація інших компонентів дашборду
     initQuickStats();
     initRecentTransactions();
-    
-    console.log('✓ Dashboard готовий');
 }
 
 /**
@@ -34,14 +30,12 @@ async function loadDashboardCharts() {
     const cashflowCanvas = document.getElementById('cashflowChart');
     if (cashflowCanvas) {
         // Ініціалізація графіку
-        console.log('✓ Cashflow chart завантажено');
     }
     
     // Category breakdown chart
     const categoryCanvas = document.getElementById('categoryChart');
     if (categoryCanvas) {
         // Ініціалізація графіку
-        console.log('✓ Category chart завантажено');
     }
 }
 
@@ -50,12 +44,11 @@ async function loadDashboardCharts() {
  */
 function initQuickStats() {
     // Анімація чисел, якщо потрібно
-    console.log('✓ Quick stats готові');
 }
 
 /**
  * Останні транзакції
  */
 function initRecentTransactions() {
-    console.log('✓ Recent transactions готові');
+    // Ініціалізація останніх транзакцій
 }

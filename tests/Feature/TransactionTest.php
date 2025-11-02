@@ -13,7 +13,9 @@ class TransactionTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected Category $incomeCategory;
+
     protected Category $expenseCategory;
 
     protected function setUp(): void
@@ -169,7 +171,7 @@ class TransactionTest extends TestCase
     {
         $otherUser = User::factory()->create();
         $otherCategory = Category::factory()->create(['user_id' => $otherUser->id]);
-        
+
         $transaction = Transaction::factory()->create([
             'user_id' => $otherUser->id,
             'category_id' => $otherCategory->id,
@@ -218,7 +220,7 @@ class TransactionTest extends TestCase
     {
         $otherUser = User::factory()->create();
         $otherCategory = Category::factory()->create(['user_id' => $otherUser->id]);
-        
+
         $transaction = Transaction::factory()->create([
             'user_id' => $otherUser->id,
             'category_id' => $otherCategory->id,
@@ -261,7 +263,7 @@ class TransactionTest extends TestCase
     {
         $otherUser = User::factory()->create();
         $otherCategory = Category::factory()->create(['user_id' => $otherUser->id]);
-        
+
         $transaction = Transaction::factory()->create([
             'user_id' => $otherUser->id,
             'category_id' => $otherCategory->id,
@@ -272,7 +274,7 @@ class TransactionTest extends TestCase
 
         // Service layer throws Exception which results in 500
         $response->assertStatus(500);
-        
+
         // Transaction should not be deleted since operation failed
         $this->assertDatabaseHas('transactions', [
             'id' => $transaction->id,
@@ -336,7 +338,7 @@ class TransactionTest extends TestCase
             ->getJson('/api/v1/transactions?date_from=2025-10-10&date_to=2025-10-20');
 
         $response->assertOk();
-        
+
         // Check that we have results (filter is working)
         $data = $response->json('data.transactions');
         $this->assertIsArray($data);

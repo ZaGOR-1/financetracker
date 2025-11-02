@@ -8,9 +8,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Security Headers Middleware
- * 
+ *
  * Додає security headers для захисту від XSS, Clickjacking, MIME sniffing та інших атак.
- * 
+ *
  * @see https://owasp.org/www-project-secure-headers/
  */
 class SecurityHeaders
@@ -42,12 +42,12 @@ class SecurityHeaders
 
         // Permissions-Policy: Контролює доступ до браузерних API
         // Вимикаємо небезпечні API (геолокація, мікрофон, камера)
-        $response->headers->set('Permissions-Policy', 
+        $response->headers->set('Permissions-Policy',
             'geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=()'
         );
 
         // Strict-Transport-Security (HSTS): Примушує використовувати HTTPS
-        // 
+        //
         // ВАЖЛИВО: Активується ТІЛЬКИ при двох умовах:
         // 1. APP_ENV=production (не local, не testing)
         // 2. HTTPS запит ($request->secure() === true)
@@ -64,7 +64,7 @@ class SecurityHeaders
             // max-age=31536000 - 1 рік (браузер запам'ятає)
             // includeSubDomains - застосовується до api.*, cdn.*, тощо
             // preload - можна додати до HSTS Preload List браузерів
-            $response->headers->set('Strict-Transport-Security', 
+            $response->headers->set('Strict-Transport-Security',
                 'max-age=31536000; includeSubDomains; preload'
             );
         }
@@ -76,12 +76,12 @@ class SecurityHeaders
         } else {
             $csp = $this->getDevelopmentCSP();
         }
-        
+
         $response->headers->set('Content-Security-Policy', $csp);
 
         // X-Powered-By: Приховуємо інформацію про сервер
         $response->headers->remove('X-Powered-By');
-        
+
         // Server: Приховуємо версію сервера (налаштовується в nginx/apache)
         if ($response->headers->has('Server')) {
             $response->headers->set('Server', 'WebServer');
@@ -92,13 +92,10 @@ class SecurityHeaders
 
     /**
      * Перевіряє, чи потрібно активувати HSTS
-     * 
+     *
      * HSTS (HTTP Strict Transport Security) активується тільки якщо:
      * 1. APP_ENV=production (не local, не testing)
      * 2. Запит йде через HTTPS ($request->secure() === true)
-     * 
-     * @param Request $request
-     * @return bool
      */
     private function shouldEnableHSTS(Request $request): bool
     {
@@ -122,7 +119,7 @@ class SecurityHeaders
             "base-uri 'self'",
             "form-action 'self'",
             "frame-ancestors 'none'",
-            "upgrade-insecure-requests",
+            'upgrade-insecure-requests',
         ]);
     }
 
@@ -131,13 +128,17 @@ class SecurityHeaders
      */
     protected function getDevelopmentCSP(): string
     {
+        // Vite dev server URLs (підтримка IPv4, IPv6, localhost та альтернативні порти)
+        $viteUrls = 'http://localhost:5173 http://127.0.0.1:5173 http://[::1]:5173 http://localhost:5174 http://127.0.0.1:5174 http://[::1]:5174';
+        $viteWs = 'ws://localhost:5173 ws://127.0.0.1:5173 ws://[::1]:5173 ws://localhost:5174 ws://127.0.0.1:5174 ws://[::1]:5174';
+
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://cdn.tailwindcss.com http://localhost:5173 ws://localhost:5173",
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.bunny.net",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://cdn.tailwindcss.com {$viteUrls}",
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.bunny.net {$viteUrls}",
             "font-src 'self' data: https://fonts.gstatic.com https://fonts.bunny.net",
             "img-src 'self' data: https: http: blob:",
-            "connect-src 'self' https://api.exchangerate-api.com https://cdn.jsdelivr.net http://localhost:5173 ws://localhost:5173",
+            "connect-src 'self' https://api.exchangerate-api.com https://cdn.jsdelivr.net {$viteUrls} {$viteWs}",
             "frame-src 'none'",
             "object-src 'none'",
             "base-uri 'self'",

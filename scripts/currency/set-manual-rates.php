@@ -27,9 +27,9 @@ foreach ($rates as [$from, $to, $rate]) {
             'updated_at' => now(),
         ]
     );
-    
+
     echo "✅ {$from} -> {$to}: {$rate}\n";
-    
+
     // Зворотній курс
     $inverseRate = 1 / $rate;
     DB::table('exchange_rates')->updateOrInsert(
@@ -44,8 +44,8 @@ foreach ($rates as [$from, $to, $rate]) {
             'updated_at' => now(),
         ]
     );
-    
-    echo "✅ {$to} -> {$from}: " . number_format($inverseRate, 6) . "\n\n";
+
+    echo "✅ {$to} -> {$from}: ".number_format($inverseRate, 6)."\n\n";
 }
 
 // USD <-> PLN (через UAH)
@@ -66,7 +66,7 @@ DB::table('exchange_rates')->updateOrInsert(
     ]
 );
 
-echo "✅ USD -> PLN: " . number_format($usdToPlnRate, 6) . "\n";
+echo '✅ USD -> PLN: '.number_format($usdToPlnRate, 6)."\n";
 
 $plnToUsdRate = 1 / $usdToPlnRate;
 DB::table('exchange_rates')->updateOrInsert(
@@ -82,13 +82,12 @@ DB::table('exchange_rates')->updateOrInsert(
     ]
 );
 
-echo "✅ PLN -> USD: " . number_format($plnToUsdRate, 6) . "\n\n";
+echo '✅ PLN -> USD: '.number_format($plnToUsdRate, 6)."\n\n";
 
-echo "📊 Всього курсів у БД: " . DB::table('exchange_rates')->count() . "\n\n";
+echo '📊 Всього курсів у БД: '.DB::table('exchange_rates')->count()."\n\n";
 
 echo "💵 Тепер ваші $1000:\n";
-echo "   $1000 USD = " . number_format(1000 * $usdToUah, 2) . " UAH\n";
+echo '   $1000 USD = '.number_format(1000 * $usdToUah, 2)." UAH\n";
 echo "   (За курсом 1 USD = {$usdToUah} UAH)\n\n";
 
 echo "✅ Готово! Оновіть дашборд (F5) щоб побачити зміни!\n";
-

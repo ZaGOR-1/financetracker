@@ -14,6 +14,7 @@ class BudgetTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected Category $expenseCategory;
 
     protected function setUp(): void
@@ -219,7 +220,7 @@ class BudgetTest extends TestCase
             'user_id' => $otherUser->id,
             'type' => 'expense',
         ]);
-        
+
         $budget = Budget::factory()->create([
             'user_id' => $otherUser->id,
             'category_id' => $otherCategory->id,
@@ -274,7 +275,7 @@ class BudgetTest extends TestCase
             'user_id' => $otherUser->id,
             'type' => 'expense',
         ]);
-        
+
         $budget = Budget::factory()->create([
             'user_id' => $otherUser->id,
             'category_id' => $otherCategory->id,
@@ -322,7 +323,7 @@ class BudgetTest extends TestCase
             'user_id' => $otherUser->id,
             'type' => 'expense',
         ]);
-        
+
         $budget = Budget::factory()->create([
             'user_id' => $otherUser->id,
             'category_id' => $otherCategory->id,
@@ -333,7 +334,7 @@ class BudgetTest extends TestCase
 
         // Service layer throws Exception which results in 500
         $response->assertStatus(500);
-        
+
         // Budget should not be deleted since operation failed
         $this->assertDatabaseHas('budgets', [
             'id' => $budget->id,
@@ -386,7 +387,7 @@ class BudgetTest extends TestCase
             ->getJson('/api/v1/budgets?period=monthly');
 
         $response->assertOk();
-        
+
         // Check that filter returns monthly budgets
         $budgets = $response->json('data.budgets');
         $this->assertIsArray($budgets);
@@ -482,6 +483,4 @@ class BudgetTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['end_date']);
     }
-
-
 }

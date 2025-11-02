@@ -47,14 +47,14 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->n
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
     // Test page (no API)
-    Route::get('/test', fn() => view('test'))->name('test');
-    
+    Route::get('/test', fn () => view('test'))->name('test');
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/simple', [DashboardController::class, 'simple'])->name('dashboard.simple');
 
     // Categories
-    Route::get('/categories', fn() => view('categories.index'))->name('categories.index');
+    Route::get('/categories', fn () => view('categories.index'))->name('categories.index');
 
     // Transactions
     Route::resource('transactions', \App\Http\Controllers\TransactionController::class);

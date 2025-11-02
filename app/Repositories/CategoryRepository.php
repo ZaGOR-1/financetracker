@@ -12,7 +12,7 @@ class CategoryRepository implements CategoryRepositoryInterface
     {
         $query = Category::where(function ($q) use ($userId) {
             $q->where('user_id', $userId)
-              ->orWhereNull('user_id'); // Системні категорії
+                ->orWhereNull('user_id'); // Системні категорії
         });
 
         if (isset($filters['type'])) {
@@ -35,13 +35,14 @@ class CategoryRepository implements CategoryRepositoryInterface
     {
         $category = Category::findOrFail($id);
         $category->update($data);
+
         return $category->fresh();
     }
 
     public function delete(int $id): bool
     {
         $category = Category::findOrFail($id);
-        
+
         // Перевірка: не можна видалити системну категорію
         if ($category->isSystem()) {
             throw new \Exception('Cannot delete system category');

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Http;
 echo "🧪 Тест API НБУ\n\n";
 
 $date = date('Ymd'); // Формат: 20251006
-$url = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange";
+$url = 'https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange';
 
 echo "Запит до НБУ:\n";
 echo "URL: {$url}\n";
@@ -23,16 +23,16 @@ try {
         'date' => $date,
         'json' => '',
     ]);
-    
+
     echo "   Status: {$response->status()}\n";
-    
+
     if ($response->successful()) {
         $data = $response->json();
-        if (!empty($data)) {
+        if (! empty($data)) {
             $rate = $data[0]['rate'];
             echo "   ✅ Курс: 1 USD = {$rate} UAH\n";
-            echo "   Тобто: $1000 = " . number_format(1000 * $rate, 2) . " грн\n\n";
-            
+            echo '   Тобто: $1000 = '.number_format(1000 * $rate, 2)." грн\n\n";
+
             // Зберігаємо вручну
             DB::table('exchange_rates')->updateOrInsert(
                 [
@@ -65,13 +65,13 @@ try {
         'date' => $date,
         'json' => '',
     ]);
-    
+
     if ($response->successful()) {
         $data = $response->json();
-        if (!empty($data)) {
+        if (! empty($data)) {
             $rate = $data[0]['rate'];
             echo "   ✅ Курс: 1 PLN = {$rate} UAH\n\n";
-            
+
             DB::table('exchange_rates')->updateOrInsert(
                 [
                     'base_currency' => 'PLN',
@@ -114,7 +114,7 @@ if ($usdRate) {
             'updated_at' => now(),
         ]
     );
-    echo "   ✅ UAH -> USD: " . number_format($inverseRate, 6) . "\n";
+    echo '   ✅ UAH -> USD: '.number_format($inverseRate, 6)."\n";
 }
 
 $plnRate = DB::table('exchange_rates')
@@ -137,7 +137,7 @@ if ($plnRate) {
             'updated_at' => now(),
         ]
     );
-    echo "   ✅ UAH -> PLN: " . number_format($inverseRate, 6) . "\n";
+    echo '   ✅ UAH -> PLN: '.number_format($inverseRate, 6)."\n";
 }
 
 // Тест 4: USD -> PLN (через UAH)
@@ -155,8 +155,8 @@ if ($usdRate && $plnRate) {
             'updated_at' => now(),
         ]
     );
-    echo "   ✅ USD -> PLN: " . number_format($usdToPlnRate, 6) . "\n";
-    
+    echo '   ✅ USD -> PLN: '.number_format($usdToPlnRate, 6)."\n";
+
     $plnToUsdRate = 1 / $usdToPlnRate;
     DB::table('exchange_rates')->updateOrInsert(
         [
@@ -170,9 +170,8 @@ if ($usdRate && $plnRate) {
             'updated_at' => now(),
         ]
     );
-    echo "   ✅ PLN -> USD: " . number_format($plnToUsdRate, 6) . "\n";
+    echo '   ✅ PLN -> USD: '.number_format($plnToUsdRate, 6)."\n";
 }
 
 echo "\n✅ Готово! Курси оновлено.\n";
-echo "\n📊 Всього курсів у БД: " . DB::table('exchange_rates')->count() . "\n";
-
+echo "\n📊 Всього курсів у БД: ".DB::table('exchange_rates')->count()."\n";

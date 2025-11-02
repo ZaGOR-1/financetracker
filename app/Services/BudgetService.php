@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Budget;
 use App\Repositories\Interfaces\BudgetRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 
 class BudgetService
 {
@@ -21,7 +20,7 @@ class BudgetService
     public function getUserBudgets(int $userId, array $filters = [])
     {
         $cacheKey = $this->cacheService->budgetsKey($userId, $filters);
-        
+
         return $this->cacheService->remember(
             'budgets',
             $cacheKey,
@@ -79,23 +78,23 @@ class BudgetService
             ->with('category')
             ->where('user_id', $userId);
 
-        if (!empty($filters['period'])) {
+        if (! empty($filters['period'])) {
             $query->where('period', $filters['period']);
         }
 
-        if (!empty($filters['is_active'])) {
+        if (! empty($filters['is_active'])) {
             $query->where('is_active', true);
         }
 
-        if (!empty($filters['exceeded'])) {
+        if (! empty($filters['exceeded'])) {
             // Бюджети де витрачено більше 100%
             $query->having('percentage', '>', 100);
         }
 
-        if (!empty($filters['warning'])) {
+        if (! empty($filters['warning'])) {
             // Бюджети де досягнуто порогу попередження
             $query->whereRaw('(spent / amount * 100) >= alert_threshold')
-                  ->having('percentage', '<=', 100);
+                ->having('percentage', '<=', 100);
         }
 
         return $query->orderBy('start_date', 'desc')->paginate($perPage);
@@ -123,10 +122,10 @@ class BudgetService
         }
 
         $budget = $this->budgetRepository->create($data);
-        
+
         // Очищаємо кеш бюджетів користувача
         $this->cacheService->forgetUserBudgets($data['user_id']);
-        
+
         return $budget;
     }
 
@@ -137,7 +136,7 @@ class BudgetService
     {
         $budget = $this->budgetRepository->find($budgetId);
 
-        if (!$budget) {
+        if (! $budget) {
             throw new \Exception('Budget not found');
         }
 
@@ -165,10 +164,10 @@ class BudgetService
         }
 
         $updated = $this->budgetRepository->update($budgetId, $data);
-        
+
         // Очищаємо кеш бюджетів користувача
         $this->cacheService->forgetUserBudgets($userId);
-        
+
         return $updated;
     }
 
@@ -179,7 +178,7 @@ class BudgetService
     {
         $budget = $this->budgetRepository->find($budgetId);
 
-        if (!$budget) {
+        if (! $budget) {
             throw new \Exception('Budget not found');
         }
 
@@ -189,12 +188,12 @@ class BudgetService
         }
 
         $deleted = $this->budgetRepository->delete($budgetId);
-        
+
         // Очищаємо кеш бюджетів користувача
         if ($deleted) {
             $this->cacheService->forgetUserBudgets($userId);
         }
-        
+
         return $deleted;
     }
 }

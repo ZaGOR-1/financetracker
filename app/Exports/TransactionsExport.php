@@ -12,8 +12,11 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 class TransactionsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
 {
     protected int $userId;
+
     protected ?string $dateFrom;
+
     protected ?string $dateTo;
+
     protected ?string $type;
 
     public function __construct(int $userId, ?string $dateFrom = null, ?string $dateTo = null, ?string $type = null)
@@ -43,7 +46,7 @@ class TransactionsExport implements FromQuery, WithHeadings, WithMapping, WithSt
         }
 
         if ($this->type) {
-            $query->whereHas('category', fn($q) => $q->where('type', $this->type));
+            $query->whereHas('category', fn ($q) => $q->where('type', $this->type));
         }
 
         return $query;

@@ -62,7 +62,7 @@ class BudgetsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
 
     protected function getPeriodName(string $period): string
     {
-        return match($period) {
+        return match ($period) {
             'daily' => 'Щоденний',
             'weekly' => 'Тижневий',
             'monthly' => 'Місячний',

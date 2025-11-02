@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Budget;
-use App\Models\User;
 use App\Notifications\BudgetExceededNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -41,6 +40,7 @@ class CheckBudgetsCommand extends Command
 
         if ($budgets->isEmpty()) {
             $this->info('No active budgets found.');
+
             return Command::SUCCESS;
         }
 
@@ -58,28 +58,29 @@ class CheckBudgetsCommand extends Command
                 $alertType = 'warning';
             }
 
-            if (!$alertType) {
+            if (! $alertType) {
                 continue; // Бюджет в нормі
             }
 
             // Перевіряємо, чи вже відправляли сповіщення сьогодні
-            $cacheKey = "budget_alert_{$budget->id}_{$alertType}_" . now()->format('Y-m-d');
-            
-            if (!$force && Cache::has($cacheKey)) {
+            $cacheKey = "budget_alert_{$budget->id}_{$alertType}_".now()->format('Y-m-d');
+
+            if (! $force && Cache::has($cacheKey)) {
                 $this->line("  Skipping budget #{$budget->id} - notification already sent today");
+
                 continue;
             }
 
             // Відправляємо нотифікацію
             try {
                 $budget->user->notify(new BudgetExceededNotification($budget, $alertType));
-                
+
                 // Зберігаємо мітку, що сповіщення відправлено (на 24 години)
                 Cache::put($cacheKey, true, now()->endOfDay());
-                
+
                 $categoryName = $budget->category?->name ?? 'Загальний бюджет';
                 $icon = $alertType === 'exceeded' ? '🚨' : '⚠️';
-                
+
                 $this->line("  {$icon} Sent {$alertType} notification for '{$categoryName}' to {$budget->user->email} ({$percentage}%)");
                 $notificationsSent++;
             } catch (\Exception $e) {
@@ -93,4 +94,3 @@ class CheckBudgetsCommand extends Command
         return Command::SUCCESS;
     }
 }
-

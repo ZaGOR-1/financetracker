@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -16,7 +16,7 @@ return new class extends Migration
         if (Schema::getConnection()->getDriverName() === 'sqlite') {
             // Видаляємо старий foreign key constraint та додаємо новий з SET NULL
             Schema::disableForeignKeyConstraints();
-            
+
             // Створюємо тимчасову таблицю з точною структурою
             Schema::create('transactions_temp', function (Blueprint $table) {
                 $table->id();
@@ -42,7 +42,7 @@ return new class extends Migration
 
             // Перейменовуємо нову таблицю
             Schema::rename('transactions_temp', 'transactions');
-            
+
             Schema::enableForeignKeyConstraints();
         } else {
             // Для MySQL/PostgreSQL
@@ -61,7 +61,7 @@ return new class extends Migration
     {
         if (Schema::getConnection()->getDriverName() === 'sqlite') {
             Schema::disableForeignKeyConstraints();
-            
+
             Schema::create('transactions_temp', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->constrained()->onDelete('cascade');
@@ -81,7 +81,7 @@ return new class extends Migration
             DB::statement('INSERT INTO transactions_temp (id, user_id, category_id, type, amount, description, transaction_date, created_at, updated_at, currency) SELECT id, user_id, category_id, type, amount, description, transaction_date, created_at, updated_at, currency FROM transactions');
             Schema::drop('transactions');
             Schema::rename('transactions_temp', 'transactions');
-            
+
             Schema::enableForeignKeyConstraints();
         } else {
             Schema::table('transactions', function (Blueprint $table) {

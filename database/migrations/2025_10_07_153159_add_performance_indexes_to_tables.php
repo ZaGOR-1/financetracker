@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Додаємо додаткові індекси для оптимізації запитів
      * Покращує продуктивність фільтрації, сортування та аналітики
      */
@@ -19,15 +19,15 @@ return new class extends Migration
             // Індекс для фільтрації по типу (income/expense)
             // Використовується в фільтрах дашборду
             $table->index('type', 'transactions_type_index');
-            
+
             // Композитний індекс для запитів статистики за період
             // Використовується: WHERE user_id = ? AND transaction_date BETWEEN ? AND ?
             $table->index(['user_id', 'transaction_date'], 'transactions_user_date_index');
-            
+
             // Композитний індекс для фільтрації за користувачем і типом
             // Використовується: WHERE user_id = ? AND type = ?
             $table->index(['user_id', 'type'], 'transactions_user_type_index');
-            
+
             // Композитний індекс для аналітики по категоріях
             // Використовується: WHERE category_id = ? AND transaction_date BETWEEN ? AND ?
             $table->index(['category_id', 'transaction_date'], 'transactions_category_date_index');
@@ -38,10 +38,10 @@ return new class extends Migration
             // Індекс для швидкого пошуку активних категорій
             // Використовується: WHERE is_active = 1
             $table->index('is_active', 'categories_is_active_index');
-            
+
             // Індекс для пошуку по типу
             $table->index('type', 'categories_type_index');
-            
+
             // Композитний індекс для фільтрації активних категорій користувача за типом
             // Використовується: WHERE user_id = ? AND type = ? AND is_active = 1
             $table->index(['user_id', 'type', 'is_active'], 'categories_user_type_active_index');
@@ -51,14 +51,14 @@ return new class extends Migration
         Schema::table('budgets', function (Blueprint $table) {
             // Індекс для пошуку активних бюджетів
             $table->index('is_active', 'budgets_is_active_index');
-            
+
             // Індекс для періоду бюджету
             $table->index('period', 'budgets_period_index');
-            
+
             // Композитний індекс для пошуку активних бюджетів користувача
             // Використовується: WHERE user_id = ? AND is_active = 1
             $table->index(['user_id', 'is_active'], 'budgets_user_active_index');
-            
+
             // Композитний індекс для пошуку бюджетів за датами
             // Використовується для перевірки перекриття періодів
             $table->index(['start_date', 'end_date'], 'budgets_dates_index');

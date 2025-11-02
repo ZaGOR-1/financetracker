@@ -27,14 +27,14 @@ class DashboardController extends Controller
     public function simple(): View
     {
         $userId = auth()->id();
-        
+
         // Get stats from service
         $stats = $this->statsService->getOverview($userId);
-        
+
         // Get counts
         $transactionsCount = Transaction::where('user_id', $userId)->count();
         $categoriesCount = Category::count();
-        
+
         return view('dashboard.simple', [
             'stats' => $stats,
             'transactions_count' => $transactionsCount,

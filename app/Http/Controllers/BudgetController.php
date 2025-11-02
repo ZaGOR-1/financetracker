@@ -17,7 +17,7 @@ class BudgetController extends Controller
     public function index(Request $request)
     {
         $filters = $request->only(['period', 'status', 'is_active']);
-        
+
         // Додаємо фільтр по статусу (exceeded/warning)
         if (isset($filters['status'])) {
             if ($filters['status'] === 'exceeded') {

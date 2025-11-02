@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Repositories\Interfaces\TransactionRepositoryInterface;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class StatsService
 {
@@ -17,28 +17,28 @@ class StatsService
     /**
      * Отримати загальну статистику за період (з конвертацією валют).
      */
-    public function getOverview(int $userId, ?string $fromDate = null, ?string $toDate = null): array
+    public function getOverview(int $userId, ?string $fromDate = null, ?string $toDate = null, ?string $currency = null): array
     {
         // Кешування на 5 хвилин
-        $cacheKey = "stats_overview_{$userId}_" . md5(($fromDate ?? 'null') . ($toDate ?? 'null'));
-        
-        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($userId, $fromDate, $toDate) {
-            return $this->calculateOverview($userId, $fromDate, $toDate);
+        $cacheKey = "stats_overview_{$userId}_".md5(($fromDate ?? 'null').($toDate ?? 'null').($currency ?? 'null'));
+
+        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($userId, $fromDate, $toDate, $currency) {
+            return $this->calculateOverview($userId, $fromDate, $toDate, $currency);
         });
     }
 
     /**
      * Розрахунок статистики (без кешу).
      */
-    private function calculateOverview(int $userId, ?string $fromDate, ?string $toDate): array
+    private function calculateOverview(int $userId, ?string $fromDate, ?string $toDate, ?string $currency = null): array
     {
         // Використовуємо Carbon для коректної обробки дат з часом
         $fromDateCarbon = $fromDate ? Carbon::parse($fromDate)->startOfDay() : Carbon::now()->startOfMonth();
         $toDateCarbon = $toDate ? Carbon::parse($toDate)->endOfDay() : Carbon::now()->endOfDay();
 
-        // Отримуємо базову валюту користувача
+        // Отримуємо базову валюту користувача або використовуємо вибрану
         $user = \App\Models\User::find($userId);
-        $baseCurrency = $user->default_currency ?? config('currencies.default', 'UAH');
+        $baseCurrency = $currency ?? $user->default_currency ?? config('currencies.default', 'UAH');
 
         // Отримуємо всі транзакції і конвертуємо їх в базову валюту
         $transactions = DB::table('transactions')
@@ -53,7 +53,7 @@ class StatsService
 
         foreach ($transactions as $transaction) {
             $amount = (float) $transaction->amount;
-            
+
             // Конвертуємо якщо валюта відрізняється
             if ($transaction->currency !== $baseCurrency) {
                 try {
@@ -65,7 +65,7 @@ class StatsService
                     );
                 } catch (\Exception $e) {
                     // Якщо конвертація не вдалась - використовуємо оригінальну суму
-                    \Log::warning("Помилка конвертації для транзакції #{$transaction->id}: " . $e->getMessage());
+                    \Log::warning("Помилка конвертації для транзакції #{$transaction->id}: ".$e->getMessage());
                 }
             }
 
@@ -105,7 +105,7 @@ class StatsService
         $categoryTotals = [];
         foreach ($expensesByCategory as $expense) {
             $amount = (float) $expense->amount;
-            
+
             if ($expense->currency !== $baseCurrency) {
                 try {
                     $amount = $this->currencyService->convert(
@@ -115,11 +115,11 @@ class StatsService
                         new \DateTime($expense->transaction_date)
                     );
                 } catch (\Exception $e) {
-                    \Log::warning("Помилка конвертації для категорії: " . $e->getMessage());
+                    \Log::warning('Помилка конвертації для категорії: '.$e->getMessage());
                 }
             }
 
-            if (!isset($categoryTotals[$expense->category_id])) {
+            if (! isset($categoryTotals[$expense->category_id])) {
                 $categoryTotals[$expense->category_id] = [
                     'category_name' => $expense->category_name,
                     'category_color' => $expense->category_color ?? '#6B7280',
@@ -131,12 +131,13 @@ class StatsService
         }
 
         // Сортуємо та обираємо топ-5
-        usort($categoryTotals, fn($a, $b) => $b['total'] <=> $a['total']);
+        usort($categoryTotals, fn ($a, $b) => $b['total'] <=> $a['total']);
         $topCategories = array_slice($categoryTotals, 0, 5);
 
         // Додаємо відсотки
         $topCategories = array_map(function ($item) use ($totalExpense) {
             $item['percentage'] = $totalExpense > 0 ? round(($item['total'] / $totalExpense) * 100, 2) : 0;
+
             return $item;
         }, $topCategories);
 
@@ -156,11 +157,10 @@ class StatsService
 
     /**
      * Отримати cashflow за періодами (дні, тижні або місяці).
-     * 
-     * @param int $userId ID користувача
-     * @param string $period Період: '7d', '14d', '30d', '3m', '6m'
-     * @param string|null $targetCurrency Цільова валюта (UAH, USD, PLN, EUR). Якщо null - використовується базова валюта користувача
-     * @return array
+     *
+     * @param  int  $userId  ID користувача
+     * @param  string  $period  Період: '7d', '14d', '30d', '3m', '6m'
+     * @param  string|null  $targetCurrency  Цільова валюта (UAH, USD, PLN, EUR). Якщо null - використовується базова валюта користувача
      */
     public function getCashflow(int $userId, string $period = '6m', ?string $targetCurrency = null): array
     {
@@ -170,7 +170,7 @@ class StatsService
 
         // Кешування на 5 хвилин
         $cacheKey = "stats_cashflow_{$userId}_{$period}_{$baseCurrency}";
-        
+
         return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($userId, $period, $baseCurrency) {
             return $this->calculateCashflow($userId, $period, $baseCurrency);
         });
@@ -191,13 +191,13 @@ class StatsService
 
         // Використовуємо strftime для SQLite та DATE_FORMAT для MySQL
         $driver = DB::connection()->getDriverName();
-        
+
         if ($groupBy === 'day') {
-            $dateFormat = $driver === 'sqlite' 
+            $dateFormat = $driver === 'sqlite'
                 ? "strftime('%Y-%m-%d', transactions.transaction_date)"
                 : "DATE_FORMAT(transactions.transaction_date, '%Y-%m-%d')";
         } else {
-            $dateFormat = $driver === 'sqlite' 
+            $dateFormat = $driver === 'sqlite'
                 ? "strftime('%Y-%m', transactions.transaction_date)"
                 : "DATE_FORMAT(transactions.transaction_date, '%Y-%m')";
         }
@@ -232,7 +232,7 @@ class StatsService
         foreach ($transactions as $transaction) {
             if (isset($cashflowData[$transaction->period_key])) {
                 $amount = (float) $transaction->amount;
-                
+
                 // Конвертуємо якщо валюта відрізняється
                 if ($transaction->currency !== $baseCurrency) {
                     try {
@@ -243,10 +243,10 @@ class StatsService
                             new \DateTime($transaction->transaction_date)
                         );
                     } catch (\Exception $e) {
-                        \Log::warning("Помилка конвертації для cashflow: " . $e->getMessage());
+                        \Log::warning('Помилка конвертації для cashflow: '.$e->getMessage());
                     }
                 }
-                
+
                 if ($transaction->type === 'income') {
                     $cashflowData[$transaction->period_key]['income'] += $amount;
                 } else {
@@ -267,7 +267,7 @@ class StatsService
     private function parsePeriod(string $period): array
     {
         $now = Carbon::now();
-        
+
         return match ($period) {
             '7d' => [
                 'start' => $now->copy()->subDays(6)->startOfDay(),
@@ -349,8 +349,8 @@ class StatsService
         $toDate = $toDate ?? Carbon::now()->format('Y-m-d');
 
         // Кешування на 5 хвилин
-        $cacheKey = "stats_category_breakdown_{$userId}_" . md5($fromDate . $toDate);
-        
+        $cacheKey = "stats_category_breakdown_{$userId}_".md5($fromDate.$toDate);
+
         return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($userId, $fromDate, $toDate) {
             return $this->calculateCategoryBreakdown($userId, $fromDate, $toDate);
         });

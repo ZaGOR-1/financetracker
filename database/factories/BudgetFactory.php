@@ -23,8 +23,8 @@ class BudgetFactory extends Factory
     {
         $startDate = $this->faker->dateTimeBetween('-1 month', '+1 month');
         $period = $this->faker->randomElement(['weekly', 'monthly']);
-        
-        $endDate = match($period) {
+
+        $endDate = match ($period) {
             'daily' => (clone $startDate)->modify('+1 day'),
             'weekly' => (clone $startDate)->modify('+1 week'),
             'monthly' => (clone $startDate)->modify('+1 month'),

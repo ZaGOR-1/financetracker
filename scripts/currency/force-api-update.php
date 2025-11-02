@@ -1,13 +1,13 @@
 <?php
 
-require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__.'/../../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../../bootstrap/app.php';
+$app = require_once __DIR__.'/../../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
 echo "🔄 Примусове оновлення курсів через API\n";
-echo str_repeat("=", 70) . "\n\n";
+echo str_repeat('=', 70)."\n\n";
 
 $today = now()->format('Y-m-d');
 
@@ -25,7 +25,7 @@ echo "   ✅ Кеш очищено\n\n";
 
 // 3. Оновлюємо через API
 echo "📡 Оновлюю курси через ExchangeRate-API...\n";
-echo str_repeat("-", 70) . "\n";
+echo str_repeat('-', 70)."\n";
 
 $service = app(\App\Services\CurrencyService::class);
 $results = $service->updateAllRates();
@@ -35,15 +35,15 @@ $failed = 0;
 
 foreach ($results as $pair => $result) {
     if ($result['success']) {
-        echo "✅ {$pair}: " . number_format($result['rate'], 6) . "\n";
+        echo "✅ {$pair}: ".number_format($result['rate'], 6)."\n";
         $success++;
     } else {
-        echo "❌ {$pair}: " . $result['error'] . "\n";
+        echo "❌ {$pair}: ".$result['error']."\n";
         $failed++;
     }
 }
 
-echo "\n" . str_repeat("=", 70) . "\n";
+echo "\n".str_repeat('=', 70)."\n";
 echo "📊 Підсумок:\n";
 echo "   ✅ Успішно: {$success}\n";
 echo "   ❌ Помилок: {$failed}\n";

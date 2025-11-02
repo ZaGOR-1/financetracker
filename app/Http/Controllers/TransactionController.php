@@ -24,7 +24,7 @@ class TransactionController extends Controller
             $query->where('transaction_date', '<=', $request->date_to);
         }
         if ($request->filled('type')) {
-            $query->whereHas('category', fn($q) => $q->where('type', $request->type));
+            $query->whereHas('category', fn ($q) => $q->where('type', $request->type));
         }
 
         $transactions = $query->paginate(15);
@@ -35,7 +35,7 @@ class TransactionController extends Controller
     public function create(): View
     {
         $categories = Category::select('id', 'name', 'type', 'icon', 'color')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('user_id')->orWhere('user_id', auth()->id());
             })
             ->where('is_active', true)
@@ -79,7 +79,7 @@ class TransactionController extends Controller
         $transaction->loadMissing('category:id,name,type,icon,color');
 
         $categories = Category::select('id', 'name', 'type', 'icon', 'color')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('user_id')->orWhere('user_id', auth()->id());
             })
             ->where('is_active', true)
@@ -119,7 +119,7 @@ class TransactionController extends Controller
     public function destroy(Transaction $transaction): RedirectResponse
     {
         $this->authorize('delete', $transaction);
-        
+
         $transaction->delete();
 
         // Очищаємо кеш статистики
@@ -164,17 +164,17 @@ class TransactionController extends Controller
         \Illuminate\Support\Facades\Cache::forget("stats_overview_{$userId}_*");
         \Illuminate\Support\Facades\Cache::forget("stats_cashflow_{$userId}_*");
         \Illuminate\Support\Facades\Cache::forget("stats_category_breakdown_{$userId}_*");
-        
+
         // Очищаємо типові ключі для поточного місяця
         $now = \Carbon\Carbon::now();
         $defaultHash = md5('nullnull');
         \Illuminate\Support\Facades\Cache::forget("stats_overview_{$userId}_{$defaultHash}");
         \Illuminate\Support\Facades\Cache::forget("stats_category_breakdown_{$userId}_{$defaultHash}");
-        
+
         // Очищаємо для основних періодів cashflow
         $periods = ['7d', '14d', '30d', '3m', '6m'];
         $currencies = ['UAH', 'USD', 'PLN'];
-        
+
         foreach ($periods as $period) {
             foreach ($currencies as $currency) {
                 \Illuminate\Support\Facades\Cache::forget("stats_cashflow_{$userId}_{$period}_{$currency}");

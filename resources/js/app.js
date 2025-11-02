@@ -1,10 +1,14 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
 import 'flowbite';
+import { logger } from './utils/logger.js';
 
 // ============================================
 // БАЗОВА ІНІЦІАЛІЗАЦІЯ (завжди завантажується)
 // ============================================
+
+// Ініціалізуємо Logger (для відслідковування помилок)
+window.logger = logger;
 
 // Ініціалізуємо Alpine.js (легкий фреймворк, завжди потрібен)
 window.Alpine = Alpine;
@@ -44,16 +48,19 @@ async function loadPageModules() {
             case 'dashboard':
                 const { initDashboard } = await import('./modules/dashboard.js');
                 await initDashboard();
+                logger.event('Dashboard loaded');
                 break;
                 
             case 'transactions':
                 const { initTransactions } = await import('./modules/transactions.js');
                 initTransactions();
+                logger.event('Transactions loaded');
                 break;
                 
             case 'budgets':
                 const { initBudgets } = await import('./modules/budgets.js');
                 await initBudgets();
+                logger.event('Budgets loaded');
                 break;
                 
             default:
@@ -62,7 +69,11 @@ async function loadPageModules() {
                 await autoLoadCharts();
         }
     } catch (error) {
-        console.error('❌ Помилка завантаження модуля:', error);
+        logger.error('Module loading failed', {
+            page,
+            error: error.message,
+            stack: error.stack,
+        });
     }
 }
 

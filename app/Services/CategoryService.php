@@ -19,11 +19,11 @@ class CategoryService
     public function getUserCategories(int $userId, array $filters = []): Collection
     {
         $cacheKey = $this->cacheService->categoriesKey($userId, $filters);
-        
+
         return $this->cacheService->remember(
             'categories',
             $cacheKey,
-            fn() => $this->categoryRepository->getUserCategories($userId, $filters)
+            fn () => $this->categoryRepository->getUserCategories($userId, $filters)
         );
     }
 
@@ -34,10 +34,10 @@ class CategoryService
     {
         $data['user_id'] = $userId;
         $category = $this->categoryRepository->create($data);
-        
+
         // Очищаємо кеш категорій користувача
         $this->cacheService->forgetUserCategories($userId);
-        
+
         return $category;
     }
 
@@ -48,7 +48,7 @@ class CategoryService
     {
         $category = $this->categoryRepository->find($categoryId);
 
-        if (!$category) {
+        if (! $category) {
             throw new \Exception('Category not found');
         }
 
@@ -62,7 +62,7 @@ class CategoryService
     {
         $category = $this->categoryRepository->find($categoryId);
 
-        if (!$category) {
+        if (! $category) {
             throw new \Exception('Category not found');
         }
 
@@ -77,10 +77,10 @@ class CategoryService
         }
 
         $updated = $this->categoryRepository->update($categoryId, $data);
-        
+
         // Очищаємо кеш категорій користувача
         $this->cacheService->forgetUserCategories($userId);
-        
+
         return $updated;
     }
 
@@ -91,7 +91,7 @@ class CategoryService
     {
         $category = $this->categoryRepository->find($categoryId);
 
-        if (!$category) {
+        if (! $category) {
             throw new \Exception('Category not found');
         }
 
@@ -106,12 +106,12 @@ class CategoryService
         }
 
         $deleted = $this->categoryRepository->delete($categoryId);
-        
+
         // Очищаємо кеш категорій користувача
         if ($deleted) {
             $this->cacheService->forgetUserCategories($userId);
         }
-        
+
         return $deleted;
     }
 }

@@ -35,12 +35,14 @@ class BudgetRepository implements BudgetRepositoryInterface
     {
         $budget = Budget::findOrFail($id);
         $budget->update($data);
+
         return $budget->fresh(['category:id,name,type,icon,color']);
     }
 
     public function delete(int $id): bool
     {
         $budget = Budget::findOrFail($id);
+
         return $budget->delete();
     }
 

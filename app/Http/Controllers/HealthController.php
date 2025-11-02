@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class HealthController extends Controller
 {
@@ -31,7 +31,7 @@ class HealthController extends Controller
             'storage' => $this->checkStorage(),
         ];
 
-        $allHealthy = collect($checks)->every(fn($check) => $check['status'] === 'ok');
+        $allHealthy = collect($checks)->every(fn ($check) => $check['status'] === 'ok');
         $statusCode = $allHealthy ? 200 : 503;
 
         return response()->json([
@@ -83,7 +83,7 @@ class HealthController extends Controller
     private function checkCache(): array
     {
         try {
-            $testKey = 'health_check_' . time();
+            $testKey = 'health_check_'.time();
             Cache::put($testKey, 'test', 5);
             $value = Cache::get($testKey);
             Cache::forget($testKey);

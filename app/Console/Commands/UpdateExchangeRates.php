@@ -39,7 +39,7 @@ class UpdateExchangeRates extends Command
 
             foreach ($results as $pair => $result) {
                 if ($result['success']) {
-                    $this->info("✅ {$pair}: " . number_format($result['rate'], 6));
+                    $this->info("✅ {$pair}: ".number_format($result['rate'], 6));
                     $successful++;
                 } else {
                     $this->error("❌ {$pair}: {$result['error']}");
@@ -48,16 +48,17 @@ class UpdateExchangeRates extends Command
             }
 
             $this->newLine();
-            $this->info("📊 Результат:");
+            $this->info('📊 Результат:');
             $this->line("  Успішно: {$successful}");
-            
+
             if ($failed > 0) {
                 $this->line("  Помилки: {$failed}");
             }
 
             return self::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('❌ Помилка: ' . $e->getMessage());
+            $this->error('❌ Помилка: '.$e->getMessage());
+
             return self::FAILURE;
         }
     }

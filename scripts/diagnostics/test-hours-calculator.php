@@ -4,13 +4,13 @@
  * Тест калькулятора годин
  */
 
-require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__.'/../../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../../bootstrap/app.php';
+$app = require_once __DIR__.'/../../bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-use App\Models\User;
 use App\Models\HourCalculation;
+use App\Models\User;
 
 echo "═══════════════════════════════════════════════════\n";
 echo "🧮 Тест калькулятора годин\n";
@@ -18,7 +18,7 @@ echo "════════════════════════�
 
 $user = User::first();
 
-if (!$user) {
+if (! $user) {
     echo "❌ Користувача не знайдено!\n";
     exit(1);
 }
@@ -81,12 +81,12 @@ foreach ($allCalculations as $calc) {
         "• %s | %s год × %s = %s/міс\n",
         $calc->created_at->format('d.m.Y H:i'),
         $calc->hours,
-        $calc->currency_symbol . $calc->hourly_rate,
+        $calc->currency_symbol.$calc->hourly_rate,
         $calc->formatted_monthly_salary
     );
 }
 
-echo "\n✅ Всього розрахунків: " . $allCalculations->count() . "\n";
+echo "\n✅ Всього розрахунків: ".$allCalculations->count()."\n";
 
 echo "\n═══════════════════════════════════════════════════\n";
 echo "🗑️  Видаляємо тестовий розрахунок...\n";

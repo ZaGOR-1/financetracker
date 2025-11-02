@@ -35,8 +35,8 @@ class BudgetExceededNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $categoryName = $this->budget->category 
-            ? $this->budget->category->name 
+        $categoryName = $this->budget->category
+            ? $this->budget->category->name
             : 'Загальний бюджет';
 
         $percentage = number_format((float) $this->budget->percentage, 1);
@@ -45,7 +45,7 @@ class BudgetExceededNotification extends Notification implements ShouldQueue
 
         $message = (new MailMessage)
             ->subject($this->getSubject())
-            ->greeting('Вітаємо, ' . $notifiable->name . '!');
+            ->greeting('Вітаємо, '.$notifiable->name.'!');
 
         if ($this->alertType === 'exceeded') {
             $message->error();
@@ -98,4 +98,3 @@ class BudgetExceededNotification extends Notification implements ShouldQueue
             : 'Ваш бюджет досяг порогу попередження:';
     }
 }
-

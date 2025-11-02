@@ -63,9 +63,10 @@ class CacheStats extends Command
     private function showFileDriverStats(): void
     {
         $cachePath = storage_path('framework/cache/data');
-        
-        if (!File::exists($cachePath)) {
+
+        if (! File::exists($cachePath)) {
             $this->warn('⚠️  Cache directory not found');
+
             return;
         }
 
@@ -84,7 +85,7 @@ class CacheStats extends Command
             try {
                 $content = File::get($file->getPathname());
                 $data = unserialize($content);
-                
+
                 if (is_array($data) && isset($data[0])) {
                     $expiration = $data[0];
                     if ($expiration === 0 || $expiration >= time()) {
@@ -139,10 +140,11 @@ class CacheStats extends Command
     {
         try {
             $store = Cache::getStore();
-            
+
             // Перевірка чи store підтримує Redis
-            if (!method_exists($store, 'connection')) {
+            if (! method_exists($store, 'connection')) {
                 $this->warn('⚠️  Redis connection method not available');
+
                 return;
             }
 
@@ -153,11 +155,11 @@ class CacheStats extends Command
                 ['Metric', 'Value'],
                 [
                     ['Connected Clients', $info['connected_clients'] ?? 'N/A'],
-                    ['Used Memory', $this->formatBytes((int)($info['used_memory'] ?? 0))],
+                    ['Used Memory', $this->formatBytes((int) ($info['used_memory'] ?? 0))],
                     ['Total Keys', $redis->dbSize()],
-                    ['Hit Rate', isset($info['keyspace_hits'], $info['keyspace_misses']) 
-                        ? $this->calculateHitRate((int)$info['keyspace_hits'], (int)$info['keyspace_misses'])
-                        : 'N/A'
+                    ['Hit Rate', isset($info['keyspace_hits'], $info['keyspace_misses'])
+                        ? $this->calculateHitRate((int) $info['keyspace_hits'], (int) $info['keyspace_misses'])
+                        : 'N/A',
                     ],
                 ]
             );
@@ -173,18 +175,20 @@ class CacheStats extends Command
     {
         try {
             $store = Cache::getStore();
-            
+
             // Перевірка чи store підтримує Memcached
-            if (!method_exists($store, 'getMemcached')) {
+            if (! method_exists($store, 'getMemcached')) {
                 $this->warn('⚠️  Memcached connection method not available');
+
                 return;
             }
 
             $memcached = $store->getMemcached();
             $stats = $memcached->getStats();
-            
-            if (empty($stats) || !is_array($stats)) {
+
+            if (empty($stats) || ! is_array($stats)) {
                 $this->warn('⚠️  No Memcached stats available');
+
                 return;
             }
 
@@ -194,11 +198,11 @@ class CacheStats extends Command
                 ['Metric', 'Value'],
                 [
                     ['Total Items', $firstServer['curr_items'] ?? 'N/A'],
-                    ['Memory Used', $this->formatBytes((int)($firstServer['bytes'] ?? 0))],
-                    ['Memory Available', $this->formatBytes((int)($firstServer['limit_maxbytes'] ?? 0))],
+                    ['Memory Used', $this->formatBytes((int) ($firstServer['bytes'] ?? 0))],
+                    ['Memory Available', $this->formatBytes((int) ($firstServer['limit_maxbytes'] ?? 0))],
                     ['Hit Rate', isset($firstServer['get_hits'], $firstServer['get_misses'])
-                        ? $this->calculateHitRate((int)$firstServer['get_hits'], (int)$firstServer['get_misses'])
-                        : 'N/A'
+                        ? $this->calculateHitRate((int) $firstServer['get_hits'], (int) $firstServer['get_misses'])
+                        : 'N/A',
                     ],
                 ]
             );
@@ -227,7 +231,7 @@ class CacheStats extends Command
             $bytes /= 1024;
         }
 
-        return round($bytes, $precision) . ' ' . $units[$i];
+        return round($bytes, $precision).' '.$units[$i];
     }
 
     /**

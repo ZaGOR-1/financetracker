@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 class CurrencyService
 {
     private array $supportedCurrencies;
+
     private int $cacheDuration;
 
     public function __construct()
@@ -37,16 +38,16 @@ class CurrencyService
 
     /**
      * Форматувати суму з символом валюти
-     * 
-     * @param float|string $amount Сума для форматування
-     * @param string $currency Код валюти (UAH, USD, PLN)
+     *
+     * @param  float|string  $amount  Сума для форматування
+     * @param  string  $currency  Код валюти (UAH, USD, PLN)
      * @return string Відформатована сума з символом
      */
     public function format(float|string $amount, string $currency): string
     {
         $config = $this->supportedCurrencies[$currency] ?? null;
 
-        if (!$config) {
+        if (! $config) {
             throw new \InvalidArgumentException("Непідтримувана валюта: {$currency}");
         }
 
@@ -81,12 +82,56 @@ class CurrencyService
     }
 
     /**
+     * Отримати курс обміну (публічний метод)
+     *
+     * @param  string  $from  Вихідна валюта
+     * @param  string  $to  Цільова валюта
+     * @param  DateTime|null  $date  Дата курсу (за замовчуванням - сьогодні)
+     * @return float Курс обміню
+     */
+    public function getRate(string $from, string $to, ?DateTime $date = null): float
+    {
+        if ($from === $to) {
+            return 1.0;
+        }
+
+        $date = $date ?? new DateTime;
+        return $this->getExchangeRate($from, $to, $date);
+    }
+
+    /**
+     * Отримати всі актуальні курси
+     *
+     * @return array Масив курсів
+     */
+    public function getRates(): array
+    {
+        $currencies = array_keys($this->supportedCurrencies);
+        $rates = [];
+
+        foreach ($currencies as $from) {
+            foreach ($currencies as $to) {
+                if ($from !== $to) {
+                    try {
+                        $rates["{$from}_{$to}"] = $this->getRate($from, $to);
+                    } catch (\Exception $e) {
+                        Log::error("Помилка отримання курсу {$from}->{$to}: " . $e->getMessage());
+                        $rates["{$from}_{$to}"] = null;
+                    }
+                }
+            }
+        }
+
+        return $rates;
+    }
+
+    /**
      * Конвертувати суму з однієї валюти в іншу
-     * 
-     * @param float $amount Сума для конвертації
-     * @param string $fromCurrency Вихідна валюта
-     * @param string $toCurrency Цільова валюта
-     * @param DateTime|null $date Дата курсу (за замовчуванням - сьогодні)
+     *
+     * @param  float  $amount  Сума для конвертації
+     * @param  string  $fromCurrency  Вихідна валюта
+     * @param  string  $toCurrency  Цільова валюта
+     * @param  DateTime|null  $date  Дата курсу (за замовчуванням - сьогодні)
      * @return float Конвертована сума
      */
     public function convert(
@@ -101,13 +146,13 @@ class CurrencyService
         }
 
         // Перевіряємо чи валюти підтримуються
-        if (!$this->isSupported($fromCurrency) || !$this->isSupported($toCurrency)) {
+        if (! $this->isSupported($fromCurrency) || ! $this->isSupported($toCurrency)) {
             throw new \InvalidArgumentException(
                 "Непідтримувана валюта: {$fromCurrency} або {$toCurrency}"
             );
         }
 
-        $date = $date ?? new DateTime();
+        $date = $date ?? new DateTime;
         $rate = $this->getExchangeRate($fromCurrency, $toCurrency, $date);
 
         return round($amount * $rate, 2);
@@ -115,10 +160,10 @@ class CurrencyService
 
     /**
      * Отримати курс обміну між двома валютами
-     * 
-     * @param string $from Вихідна валюта
-     * @param string $to Цільова валюта
-     * @param DateTime $date Дата курсу
+     *
+     * @param  string  $from  Вихідна валюта
+     * @param  string  $to  Цільова валюта
+     * @param  DateTime  $date  Дата курсу
      * @return float Курс обміну
      */
     private function getExchangeRate(string $from, string $to, DateTime $date): float
@@ -142,8 +187,8 @@ class CurrencyService
             try {
                 return $this->fetchExchangeRateFromAPI($from, $to, $date);
             } catch (\Exception $e) {
-                Log::error("Помилка отримання курсу {$from}->{$to}: " . $e->getMessage());
-                
+                Log::error("Помилка отримання курсу {$from}->{$to}: ".$e->getMessage());
+
                 // Повертаємо курс 1:1 як fallback (краще мати дані ніж помилку)
                 return 1.0;
             }
@@ -172,7 +217,7 @@ class CurrencyService
     {
         $apiKey = config('currencies.exchange_api.exchangerate_api_key');
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             throw new \Exception('ExchangeRate-API ключ не налаштований');
         }
 
@@ -185,14 +230,14 @@ class CurrencyService
                 ->withOptions(['verify' => false]) // Тимчасово для Windows SSL проблем
                 ->get($url);
 
-            if (!$response->successful()) {
-                throw new \Exception("Помилка API: " . $response->status());
+            if (! $response->successful()) {
+                throw new \Exception('Помилка API: '.$response->status());
             }
 
             $data = $response->json();
 
             if ($data['result'] !== 'success') {
-                throw new \Exception("API помилка: " . ($data['error-type'] ?? 'unknown'));
+                throw new \Exception('API помилка: '.($data['error-type'] ?? 'unknown'));
             }
 
             $rate = (float) $data['conversion_rate'];
@@ -203,7 +248,7 @@ class CurrencyService
             return $rate;
 
         } catch (\Exception $e) {
-            Log::error("ExchangeRate-API помилка {$from}->{$to}: " . $e->getMessage());
+            Log::error("ExchangeRate-API помилка {$from}->{$to}: ".$e->getMessage());
             throw $e;
         }
     }
@@ -219,12 +264,12 @@ class CurrencyService
         if ($from !== 'UAH' && $to !== 'UAH') {
             $fromToUah = $this->fetchFromNBU($from, 'UAH', $date);
             $uahToTarget = $this->fetchFromNBU('UAH', $to, $date);
-            
+
             $rate = $fromToUah * $uahToTarget;
-            
+
             // Зберігаємо обчислений курс
             $this->saveExchangeRate($from, $to, $rate, $date);
-            
+
             return $rate;
         }
 
@@ -241,8 +286,8 @@ class CurrencyService
                 'json' => '',
             ]);
 
-        if (!$response->successful()) {
-            throw new \Exception("Помилка API НБУ: " . $response->status());
+        if (! $response->successful()) {
+            throw new \Exception('Помилка API НБУ: '.$response->status());
         }
 
         $data = $response->json();
@@ -282,7 +327,7 @@ class CurrencyService
                 ]
             );
         } catch (\Exception $e) {
-            Log::error("Помилка збереження курсу: " . $e->getMessage());
+            Log::error('Помилка збереження курсу: '.$e->getMessage());
         }
     }
 
@@ -291,7 +336,7 @@ class CurrencyService
      */
     public function updateAllRates(?DateTime $date = null): array
     {
-        $date = $date ?? new DateTime();
+        $date = $date ?? new DateTime;
         $currencies = array_keys($this->supportedCurrencies);
         $results = [];
 

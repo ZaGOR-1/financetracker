@@ -235,6 +235,10 @@ project/
 - **[docs/SECURITY-SUMMARY.md](docs/SECURITY-SUMMARY.md)** — Короткий security звіт
 - **[docs/SECURITY-ROADMAP.md](docs/SECURITY-ROADMAP.md)** — Майбутні security покращення
 
+### 📊 Logging & Monitoring
+- **[docs/LOGGING-SYSTEM.md](docs/LOGGING-SYSTEM.md)** — Повна документація системи логування
+- **[docs/LOGGING-QUICKSTART.md](docs/LOGGING-QUICKSTART.md)** — Швидкий старт з логуванням
+
 ### Архітектура
 - [`docs/models.md`](docs/models.md) — опис моделей та зв'язків
 - [`docs/er-diagram.md`](docs/er-diagram.md) — ER-діаграма бази даних

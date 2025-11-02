@@ -1,7 +1,7 @@
 <?php
 
-require __DIR__ . '/../../vendor/autoload.php';
-$app = require_once __DIR__ . '/../../bootstrap/app.php';
+require __DIR__.'/../../vendor/autoload.php';
+$app = require_once __DIR__.'/../../bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 use App\Models\Transaction;
@@ -40,17 +40,17 @@ try {
         ->where('target_currency', 'UAH')
         ->where('date', now()->format('Y-m-d'))
         ->first();
-    
+
     if ($rate) {
         echo "   USD -> UAH: {$rate->rate} (дата: {$rate->date})\n";
         $convertedAmount = 1000 * $rate->rate;
-        echo "   $1000 USD = " . number_format($convertedAmount, 2) . " UAH\n\n";
+        echo '   $1000 USD = '.number_format($convertedAmount, 2)." UAH\n\n";
     } else {
         echo "   ⚠️  Курс USD->UAH не знайдено в БД!\n";
         echo "   Спробую отримати з API НБУ...\n";
-        
+
         $converted = $currencyService->convert(1000, 'USD', 'UAH');
-        echo "   $1000 USD = " . number_format($converted, 2) . " UAH\n\n";
+        echo '   $1000 USD = '.number_format($converted, 2)." UAH\n\n";
     }
 } catch (Exception $e) {
     echo "   ❌ Помилка: {$e->getMessage()}\n\n";
@@ -62,11 +62,11 @@ $statsService = app(\App\Services\StatsService::class);
 
 try {
     $stats = $statsService->getOverview($user->id);
-    
+
     echo "   Валюта дашборда: {$stats['currency']}\n";
-    echo "   Доходи: " . number_format($stats['total_income'], 2) . " {$stats['currency']}\n";
-    echo "   Витрати: " . number_format($stats['total_expense'], 2) . " {$stats['currency']}\n";
-    echo "   Баланс: " . number_format($stats['balance'], 2) . " {$stats['currency']}\n";
+    echo '   Доходи: '.number_format($stats['total_income'], 2)." {$stats['currency']}\n";
+    echo '   Витрати: '.number_format($stats['total_expense'], 2)." {$stats['currency']}\n";
+    echo '   Баланс: '.number_format($stats['balance'], 2)." {$stats['currency']}\n";
     echo "   Кількість транзакцій: {$stats['transactions_count']}\n\n";
 } catch (Exception $e) {
     echo "   ❌ Помилка StatsService: {$e->getMessage()}\n\n";
@@ -74,12 +74,12 @@ try {
 
 // 5. Перевіряємо всі доходи в USD
 echo "5️⃣  Всі доходи в USD:\n";
-$usdIncomes = Transaction::whereHas('category', function($q) {
+$usdIncomes = Transaction::whereHas('category', function ($q) {
     $q->where('type', 'income');
 })
-->where('currency', 'USD')
-->where('user_id', $user->id)
-->get();
+    ->where('currency', 'USD')
+    ->where('user_id', $user->id)
+    ->get();
 
 if ($usdIncomes->count() > 0) {
     $totalUsd = 0;
@@ -95,7 +95,7 @@ if ($usdIncomes->count() > 0) {
 // 6. Рекомендації
 echo "6️⃣  Рекомендації:\n";
 
-if (!$rate) {
+if (! $rate) {
     echo "   ⚠️  ПРОБЛЕМА: Курси валют не оновлені!\n";
     echo "   РІШЕННЯ: Запустіть команду:\n";
     echo "      php update-currency-rates.php\n\n";
@@ -107,4 +107,3 @@ if ($lastTransaction->currency === 'USD' && $lastTransaction->category->type ===
 }
 
 echo "\n🔄 Після оновлення курсів перезавантажте дашборд!\n";
-

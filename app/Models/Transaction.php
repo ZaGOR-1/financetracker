@@ -101,6 +101,7 @@ class Transaction extends Model
     public function getFormattedAmountAttribute(): string
     {
         $currencyService = app(\App\Services\CurrencyService::class);
+
         return $currencyService->format($this->amount, $this->currency ?? 'UAH');
     }
 
@@ -110,6 +111,7 @@ class Transaction extends Model
     public function getCurrencySymbolAttribute(): string
     {
         $currencyService = app(\App\Services\CurrencyService::class);
+
         return $currencyService->getSymbol($this->currency ?? 'UAH');
     }
 }

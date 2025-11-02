@@ -1,19 +1,19 @@
 <?php
 
-require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__.'/../../vendor/autoload.php';
 
-$app = require_once __DIR__ . '/../../bootstrap/app.php';
+$app = require_once __DIR__.'/../../bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-use App\Models\User;
 use App\Models\Category;
 use App\Models\Transaction;
+use App\Models\User;
 
 echo "Створення тестових транзакцій з різними валютами...\n\n";
 
 $user = User::first();
 
-if (!$user) {
+if (! $user) {
     echo "❌ Користувач не знайдений!\n";
     exit(1);
 }
@@ -43,7 +43,7 @@ $testTransactions = [
         'description' => 'Проект для українського клієнта',
         'date' => '2025-10-03 14:20:00',
     ],
-    
+
     // Доходи в USD
     [
         'category' => 'Фріланс',
@@ -59,7 +59,7 @@ $testTransactions = [
         'description' => 'Stock dividends',
         'date' => '2025-10-01 10:00:00',
     ],
-    
+
     // Доходи в PLN
     [
         'category' => 'Фріланс',
@@ -68,7 +68,7 @@ $testTransactions = [
         'description' => 'Polska zlecenie',
         'date' => '2025-10-02 12:30:00',
     ],
-    
+
     // Витрати в UAH
     [
         'category' => 'Їжа',
@@ -98,7 +98,7 @@ $testTransactions = [
         'description' => 'Планета Кіно з друзями',
         'date' => '2025-10-05 20:30:45',
     ],
-    
+
     // Витрати в USD
     [
         'category' => 'Покупки',
@@ -121,7 +121,7 @@ $testTransactions = [
         'description' => 'Netflix Premium',
         'date' => '2025-10-01 09:00:00',
     ],
-    
+
     // Витрати в PLN
     [
         'category' => 'Покупки',
@@ -149,7 +149,7 @@ $testTransactions = [
 $created = 0;
 foreach ($testTransactions as $data) {
     $category = Category::where('name', $data['category'])->first();
-    
+
     if ($category) {
         Transaction::create([
             'user_id' => $user->id,
@@ -159,14 +159,14 @@ foreach ($testTransactions as $data) {
             'description' => $data['description'],
             'transaction_date' => $data['date'],
         ]);
-        
-        $symbol = match($data['currency']) {
+
+        $symbol = match ($data['currency']) {
             'UAH' => '₴',
             'USD' => '$',
             'PLN' => 'zł',
             default => $data['currency'],
         };
-        
+
         echo "✓ {$data['currency']}: {$symbol}{$data['amount']} - {$data['category']} ({$data['date']})\n";
         $created++;
     }
@@ -177,4 +177,3 @@ echo "\n📊 Тепер можна:\n";
 echo "  1. Переглянути транзакції: http://localhost:8000/transactions\n";
 echo "  2. Додати нову транзакцію з вибором валюти\n";
 echo "  3. Оновити курси валют: php artisan currency:update-rates\n";
-

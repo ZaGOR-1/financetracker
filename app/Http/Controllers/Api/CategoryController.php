@@ -19,7 +19,7 @@ class CategoryController extends Controller
     public function index(Request $request): JsonResponse
     {
         $filters = $request->only(['type', 'is_active']);
-        
+
         $categories = $this->categoryService->getUserCategories(
             $request->user()->id,
             $filters
@@ -66,10 +66,11 @@ class CategoryController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Category creation error: ' . $e->getMessage());
+            \Log::error('Category creation error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Помилка створення категорії: ' . $e->getMessage(),
+                'message' => 'Помилка створення категорії: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -125,6 +126,7 @@ class CategoryController extends Controller
             ]);
         } catch (\Exception $e) {
             $statusCode = $e->getCode() === 403 ? 403 : 500;
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
@@ -146,6 +148,7 @@ class CategoryController extends Controller
             ]);
         } catch (\Exception $e) {
             $statusCode = $e->getCode() === 403 ? 403 : 500;
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),

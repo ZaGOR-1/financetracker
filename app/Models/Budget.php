@@ -62,7 +62,7 @@ class Budget extends Model
     {
         $query = Transaction::where('user_id', $this->user_id)
             ->whereBetween('transaction_date', [$this->start_date, $this->end_date])
-            ->whereHas('category', fn($q) => $q->where('type', 'expense'));
+            ->whereHas('category', fn ($q) => $q->where('type', 'expense'));
 
         if ($this->category_id) {
             $query->where('category_id', $this->category_id);
@@ -87,6 +87,7 @@ class Budget extends Model
         if ($this->amount == 0) {
             return 0;
         }
+
         return round(($this->spent / $this->amount) * 100, 2);
     }
 
@@ -120,7 +121,8 @@ class Budget extends Model
     public function scopeCurrent($query)
     {
         $now = now()->toDateString();
+
         return $query->where('start_date', '<=', $now)
-                     ->where('end_date', '>=', $now);
+            ->where('end_date', '>=', $now);
     }
 }

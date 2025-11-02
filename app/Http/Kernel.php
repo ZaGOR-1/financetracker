@@ -37,6 +37,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\SecurityHeaders::class, // Security Headers для захисту від атак
+            \App\Http\Middleware\LogRequests::class, // Логування всіх HTTP запитів
         ],
 
         'api' => [
@@ -47,6 +48,7 @@ class Kernel extends HttpKernel
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \App\Http\Middleware\EncryptCookies::class,
+            \App\Http\Middleware\LogRequests::class, // Логування API запитів
         ],
     ];
 

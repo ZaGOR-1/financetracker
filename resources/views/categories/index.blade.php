@@ -126,14 +126,16 @@
 
 @push('scripts')
 <script>
+// Глобальні змінні
+let categoriesHeaders = null;
+let categories = [];
+
 document.addEventListener('DOMContentLoaded', function() {
-    const headers = {
+    categoriesHeaders = {
         'Accept': 'application/json',
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
         'X-Requested-With': 'XMLHttpRequest'
     };
-    
-    let categories = [];
     
     // Tab switching functionality
     const tabs = document.querySelectorAll('[role="tab"]');
@@ -186,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadCategories() {
         console.log('Loading categories...');
         fetch('/api/v1/categories', {
-            headers: headers,
+            headers: categoriesHeaders,
             credentials: 'same-origin'
         })
         .then(response => response.json())
@@ -283,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         fetch(`/api/v1/categories/${id}`, {
             method: 'DELETE',
-            headers: headers,
+            headers: categoriesHeaders,
             credentials: 'same-origin'
         })
         .then(response => response.json())
@@ -316,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(url, {
             method: method,
             headers: {
-                ...headers,
+                ...categoriesHeaders,
                 'Content-Type': 'application/json'
             },
             credentials: 'same-origin',

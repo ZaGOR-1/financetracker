@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('currency', 3)->default('UAH'); // UAH, USD, PLN
             $table->string('name')->nullable()->comment('Назва розрахунку (необов\'язково)');
             $table->timestamps();
-            
+
             // Індекси
             $table->index('user_id');
             $table->index('created_at');

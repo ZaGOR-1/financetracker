@@ -23,7 +23,7 @@ class TransactionFactory extends Factory
     {
         // Випадково обираємо тип транзакції
         $type = $this->faker->randomElement(['income', 'expense']);
-        
+
         return [
             'user_id' => User::factory(),
             'category_id' => Category::factory()->state(['type' => $type]),

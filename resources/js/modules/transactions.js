@@ -7,13 +7,9 @@
  * Ініціалізація сторінки транзакцій
  */
 export function initTransactions() {
-    console.log('⚡ Ініціалізація Transactions...');
-    
     initFilters();
     initBulkActions();
     initFormValidation();
-    
-    console.log('✓ Transactions готові');
 }
 
 /**
@@ -24,7 +20,6 @@ function initFilters() {
     if (!filterForm) return;
     
     // Логіка фільтрів
-    console.log('✓ Filters готові');
 }
 
 /**
@@ -35,7 +30,6 @@ function initBulkActions() {
     if (!bulkForm) return;
     
     // Логіка bulk actions
-    console.log('✓ Bulk actions готові');
 }
 
 /**
@@ -46,5 +40,4 @@ function initFormValidation() {
     if (!form) return;
     
     // Валідація форми
-    console.log('✓ Form validation готова');
 }

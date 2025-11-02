@@ -20,7 +20,6 @@ export async function initCharts() {
     chartInstance = Chart;
     window.Chart = Chart;
     
-    console.log('✓ Chart.js завантажено');
     return Chart;
 }
 
@@ -39,6 +38,5 @@ export function shouldLoadCharts() {
 export async function autoLoadCharts() {
     if (shouldLoadCharts()) {
         await initCharts();
-        console.log('✓ Chart.js автоматично завантажено');
     }
 }

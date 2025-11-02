@@ -17,7 +17,7 @@ $historicalRates = [
 ];
 
 foreach ($historicalRates as $date => $rates) {
-    list($usdRate, $plnRate) = $rates;
+    [$usdRate, $plnRate] = $rates;
     // USD <-> UAH
     DB::table('exchange_rates')->updateOrInsert(
         ['base_currency' => 'USD', 'target_currency' => 'UAH', 'date' => $date],
@@ -27,7 +27,7 @@ foreach ($historicalRates as $date => $rates) {
         ['base_currency' => 'UAH', 'target_currency' => 'USD', 'date' => $date],
         ['rate' => 1 / $usdRate, 'created_at' => now(), 'updated_at' => now()]
     );
-    
+
     // PLN <-> UAH
     DB::table('exchange_rates')->updateOrInsert(
         ['base_currency' => 'PLN', 'target_currency' => 'UAH', 'date' => $date],
@@ -37,7 +37,7 @@ foreach ($historicalRates as $date => $rates) {
         ['base_currency' => 'UAH', 'target_currency' => 'PLN', 'date' => $date],
         ['rate' => 1 / $plnRate, 'created_at' => now(), 'updated_at' => now()]
     );
-    
+
     // USD <-> PLN
     $usdToPlnRate = $usdRate / $plnRate;
     DB::table('exchange_rates')->updateOrInsert(
@@ -48,10 +48,9 @@ foreach ($historicalRates as $date => $rates) {
         ['base_currency' => 'PLN', 'target_currency' => 'USD', 'date' => $date],
         ['rate' => 1 / $usdToPlnRate, 'created_at' => now(), 'updated_at' => now()]
     );
-    
+
     echo "✅ {$date}: USD={$usdRate}, PLN={$plnRate}\n";
 }
 
-echo "\n📊 Всього курсів у БД: " . DB::table('exchange_rates')->count() . "\n";
+echo "\n📊 Всього курсів у БД: ".DB::table('exchange_rates')->count()."\n";
 echo "✅ Готово!\n";
-

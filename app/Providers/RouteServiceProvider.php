@@ -41,8 +41,42 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function configureRateLimiting(): void
     {
+        // Загальний Rate Limiting для API
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip())
+                ->response(function (Request $request, array $headers) {
+                    return response()->json([
+                        'message' => 'Занадто багато запитів. Спробуйте пізніше.',
+                        'error' => 'rate_limit_exceeded'
+                    ], 429, $headers);
+                });
+        });
+        
+        // Більш суворий Rate Limiting для аутентифікації (захист від brute force)
+        RateLimiter::for('auth', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip())
+                ->response(function (Request $request, array $headers) {
+                    return response()->json([
+                        'message' => 'Занадто багато спроб входу. Почекайте хвилину.',
+                        'error' => 'auth_rate_limit_exceeded'
+                    ], 429, $headers);
+                });
+        });
+        
+        // Rate Limiting для експорту даних (ресурсномісткі операції)
+        RateLimiter::for('export', function (Request $request) {
+            return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip())
+                ->response(function (Request $request, array $headers) {
+                    return response()->json([
+                        'message' => 'Занадто багато запитів на експорт. Спробуйте пізніше.',
+                        'error' => 'export_rate_limit_exceeded'
+                    ], 429, $headers);
+                });
+        });
+        
+        // Rate Limiting для email нотифікацій
+        RateLimiter::for('notifications', function (Request $request) {
+            return Limit::perHour(20)->by($request->user()?->id ?: $request->ip());
         });
     }
 }

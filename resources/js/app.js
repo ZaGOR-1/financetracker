@@ -33,11 +33,15 @@ async function loadPageModules() {
     const page = getCurrentPage();
     
     if (!page) {
-        console.log('ℹ️ Базові модулі завантажено');
+        if (import.meta.env.DEV) {
+            console.log('ℹ️ Базові модулі завантажено');
+        }
         return;
     }
     
-    console.log(`🚀 Завантаження модулів для: ${page}`);
+    if (import.meta.env.DEV) {
+        console.log(`🚀 Завантаження модулів для: ${page}`);
+    }
     
     try {
         switch (page) {
@@ -62,7 +66,9 @@ async function loadPageModules() {
                 await autoLoadCharts();
         }
     } catch (error) {
-        console.error('❌ Помилка завантаження модуля:', error);
+        if (import.meta.env.DEV) {
+            console.error('❌ Помилка завантаження модуля:', error);
+        }
     }
 }
 

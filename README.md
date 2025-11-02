@@ -228,6 +228,8 @@ project/
 - **[.env.production.example](.env.production.example)** — Production environment template
 
 ### Performance & Security
+- **[docs/SITE-AUDIT-AND-OPTIMIZATIONS.md](docs/SITE-AUDIT-AND-OPTIMIZATIONS.md)** — 🔍 Аудит сайту та виправлені проблеми (НОВИЙ)
+- **[docs/CACHE-CONFIGURATION-GUIDE.md](docs/CACHE-CONFIGURATION-GUIDE.md)** — 📦 Керівництво з налаштування кешування (НОВИЙ)
 - **[docs/PERFORMANCE-OPTIMIZATION.md](docs/PERFORMANCE-OPTIMIZATION.md)** — Database, Caching, N+1, Lazy Loading
 - **[docs/TAILWIND-OPTIMIZATION.md](docs/TAILWIND-OPTIMIZATION.md)** — CSS optimization з PurgeCSS
 - **[docs/ALL-OPTIMIZATIONS-SUMMARY.md](docs/ALL-OPTIMIZATIONS-SUMMARY.md)** — Фінальний звіт про 5 оптимізацій

@@ -78,11 +78,8 @@ class StatsService
 
         $balance = $totalIncome - $totalExpense;
 
-        // Кількість транзакцій
-        $transactionsCount = DB::table('transactions')
-            ->where('user_id', $userId)
-            ->whereBetween('transaction_date', [$fromDateCarbon->format('Y-m-d H:i:s'), $toDateCarbon->format('Y-m-d H:i:s')])
-            ->count();
+        // Кількість транзакцій (використовуємо вже отримані дані замість нового запиту)
+        $transactionsCount = count($transactions);
 
         // Топ категорій витрат (з конвертацією валют)
         $expensesByCategory = DB::table('transactions')

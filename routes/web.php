@@ -37,9 +37,9 @@ Route::get('/', function () {
 // Auth Routes з rate limiting для захисту від brute-force
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle.login'); // 5 спроб/хвилину
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:auth'); // 5 спроб/хвилину
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle.login'); // 5 спроб/хвилину
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:auth'); // 5 спроб/хвилину
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
@@ -68,9 +68,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/hours-calculator', [\App\Http\Controllers\HourCalculatorController::class, 'store'])->name('hours-calculator.store');
     Route::delete('/hours-calculator/{hourCalculation}', [\App\Http\Controllers\HourCalculatorController::class, 'destroy'])->name('hours-calculator.destroy');
 
-    // Exports
-    Route::prefix('export')->name('export.')->controller(\App\Http\Controllers\ExportController::class)->group(function () {
-        Route::get('/transactions', 'transactions')->name('transactions');
-        Route::get('/budgets', 'budgets')->name('budgets');
+    // Exports з rate limiting (ресурсномісткі операції)
+    Route::prefix('export')->name('export.')->middleware('throttle:export')->controller(\App\Http\Controllers\ExportController::class)->group(function () {
+        Route::get('/transactions', 'transactions')->name('transactions'); // 10 запитів/хв
+        Route::get('/budgets', 'budgets')->name('budgets'); // 10 запитів/хв
     });
 });

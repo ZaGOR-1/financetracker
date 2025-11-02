@@ -21,14 +21,14 @@ use Illuminate\Support\Facades\Route;
 // Префікс /api/v1 для версіонування API
 Route::prefix('v1')->group(function () {
     
-    // Публічні маршрути (авторизація) з rate limiting
-    Route::prefix('auth')->middleware('throttle.login')->group(function () {
+    // Публічні маршрути (авторизація) з суворим rate limiting
+    Route::prefix('auth')->middleware('throttle:auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register']); // 5 спроб/хв
         Route::post('/login', [AuthController::class, 'login']); // 5 спроб/хв
     });
 
     // Захищені маршрути (потребують авторизації) - підтримка Web Session та Sanctum
-    Route::middleware(['auth:sanctum,web', 'throttle:60,1'])->group(function () {
+    Route::middleware(['auth:sanctum,web', 'throttle:api'])->group(function () {
         
         // Авторизація
         Route::prefix('auth')->group(function () {

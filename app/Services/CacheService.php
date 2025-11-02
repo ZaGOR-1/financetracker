@@ -14,25 +14,34 @@ use Carbon\Carbon;
 class CacheService
 {
     /**
-     * TTL для різних типів даних (у хвилинах)
-     */
-    private const TTL = [
-        'stats' => 5,           // Статистика - 5 хвилин
-        'transactions' => 10,   // Транзакції - 10 хвилин
-        'categories' => 60,     // Категорії - 1 година (змінюються рідко)
-        'budgets' => 15,        // Бюджети - 15 хвилин
-        'currency' => 1440,     // Курси валют - 24 години
-        'user' => 30,           // Дані користувача - 30 хвилин
-    ];
-
-    /**
      * Префікс для всіх ключів
      */
     private string $prefix;
 
+    /**
+     * Множник для TTL залежно від стратегії кешування
+     */
+    private float $ttlMultiplier;
+
     public function __construct()
     {
-        $this->prefix = config('cache.prefix', 'finance_tracker');
+        $this->prefix = config('finance-cache.prefix', 'finance_tracker');
+        
+        // Визначаємо множник TTL залежно від стратегії
+        $strategy = config('finance-cache.strategy', 'moderate');
+        $this->ttlMultiplier = config("finance-cache.multipliers.{$strategy}", 1.0);
+    }
+    
+    /**
+     * Отримати TTL для типу даних з урахуванням стратегії
+     * 
+     * @param string $type
+     * @return int
+     */
+    private function getConfiguredTTL(string $type): int
+    {
+        $baseTTL = config("finance-cache.ttl.{$type}", 60);
+        return (int) ($baseTTL * $this->ttlMultiplier);
     }
 
     /**
@@ -47,7 +56,7 @@ class CacheService
     public function remember(string $type, string $key, callable $callback, ?int $ttl = null): mixed
     {
         $cacheKey = $this->generateKey($type, $key);
-        $ttlMinutes = $ttl ?? (self::TTL[$type] ?? 60);
+        $ttlMinutes = $ttl ?? $this->getConfiguredTTL($type);
         
         return Cache::remember($cacheKey, now()->addMinutes($ttlMinutes), $callback);
     }
@@ -78,7 +87,7 @@ class CacheService
     public function put(string $type, string $key, mixed $value, ?int $ttl = null): bool
     {
         $cacheKey = $this->generateKey($type, $key);
-        $ttlMinutes = $ttl ?? (self::TTL[$type] ?? 60);
+        $ttlMinutes = $ttl ?? $this->getConfiguredTTL($type);
         
         return Cache::put($cacheKey, $value, now()->addMinutes($ttlMinutes));
     }
@@ -133,10 +142,13 @@ class CacheService
      */
     public function forgetUserTransactions(int $userId): void
     {
-        // ТИМЧАСОВЕ РІШЕННЯ: Повне очищення кешу при зміні транзакцій
-        // TODO: Реалізувати правильне видалення за патерном для file driver
-        // або перейти на Redis/Memcached з підтримкою tags
-        Cache::flush();
+        // Очищаємо тільки кеш конкретного користувача
+        $this->forgetUserType('transactions', $userId);
+        // Також очищаємо статистику, яка залежить від транзакцій
+        $this->forgetUserType('stats', $userId);
+        
+        // Додатково очищаємо всі можливі варіанти транзакцій з фільтрами
+        $this->forgetTransactionVariants($userId);
     }
 
     /**
@@ -147,10 +159,64 @@ class CacheService
      */
     public function forgetUserCategories(int $userId): void
     {
-        // ТИМЧАСОВЕ РІШЕННЯ: Повне очищення кешу при зміні категорій
-        // TODO: Реалізувати правильне видалення за патерном для file driver
-        // або перейти на Redis/Memcached з підтримкою tags
-        Cache::flush();
+        // Очищаємо тільки кеш конкретного користувача
+        $this->forgetUserType('categories', $userId);
+        // Також очищаємо статистику, яка залежить від категорій
+        $this->forgetUserType('stats', $userId);
+        
+        // Додатково очищаємо всі можливі варіанти категорій з фільтрами
+        $this->forgetCategoryVariants($userId);
+    }
+    
+    /**
+     * Очистити всі варіанти кешу транзакцій для користувача
+     * 
+     * @param int $userId
+     * @return void
+     */
+    private function forgetTransactionVariants(int $userId): void
+    {
+        // Список можливих фільтрів та комбінацій
+        $filterCombinations = [
+            [],
+            ['type' => 'income'],
+            ['type' => 'expense'],
+        ];
+        
+        foreach ($filterCombinations as $filters) {
+            // Очищаємо кеш для перших 10 сторінок (покриває більшість випадків)
+            for ($page = 1; $page <= 10; $page++) {
+                $key = $this->transactionsKey($userId, $filters, $page);
+                $this->forget('transactions', $key);
+            }
+        }
+    }
+    
+    /**
+     * Очистити всі варіанти кешу категорій для користувача
+     * 
+     * @param int $userId
+     * @return void
+     */
+    private function forgetCategoryVariants(int $userId): void
+    {
+        // Список можливих фільтрів
+        $filterCombinations = [
+            [],
+            ['type' => 'income'],
+            ['type' => 'expense'],
+            ['is_active' => true],
+            ['is_active' => false],
+            ['type' => 'income', 'is_active' => true],
+            ['type' => 'income', 'is_active' => false],
+            ['type' => 'expense', 'is_active' => true],
+            ['type' => 'expense', 'is_active' => false],
+        ];
+        
+        foreach ($filterCombinations as $filters) {
+            $key = $this->categoriesKey($userId, $filters);
+            $this->forget('categories', $key);
+        }
     }
 
     /**
@@ -256,7 +322,7 @@ class CacheService
      */
     public function getTTL(string $type): int
     {
-        return self::TTL[$type] ?? 60;
+        return $this->getConfiguredTTL($type);
     }
 
     /**
